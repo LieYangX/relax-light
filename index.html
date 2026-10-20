@@ -25,6 +25,13 @@
 
         * {
             box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        ::selection {
+            background: transparent;
         }
 
         html,
@@ -86,6 +93,8 @@
             display: block;
             width: 100%;
             height: 100%;
+            touch-action: none;
+            -webkit-user-drag: none;
         }
 
         .vignette {
@@ -649,6 +658,14 @@
                 y: DIR.x
             };
 
+            function clearPageSelection() {
+                const selection = window.getSelection();
+
+                if (selection && selection.rangeCount > 0) {
+                    selection.removeAllRanges();
+                }
+            }
+
             // ===== 页面元素 =====
             const canvas = document.getElementById("scene");
             const ctx = canvas.getContext("2d");
@@ -733,6 +750,35 @@
             const trail = [];
             const particles = [];
             const rings = [];
+            const words = [];
+            const WORD_LANES = [0, 80, -90];
+            const WORD_FORWARD = [45, 90, 60];
+            const WORD_FONT_FAMILY = '"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif';
+            let lastPhraseIndex = -1;
+            let wordSerial = 0;
+
+            const PHRASES = [
+                "你正在向前",
+                "慢一点，也算前进",
+                "别回头，光在前面",
+                "你已经走了很远",
+                "把风甩在身后",
+                "此刻，只需向前",
+                "你比想象中更快",
+                "允许自己发光",
+                "每一次加速都算数",
+                "世界正在为你让路",
+                "别急，光会到的",
+                "越过这一段，就好了",
+                "保持呼吸，继续向前",
+                "你不是在原地",
+                "再坚持一下",
+                "光会追上你",
+                "你已经在路上了",
+                "去成为自己的光",
+                "向前的每一步都算数",
+                "不必回头，向前就好"
+            ];
 
             // ===== 径向光晕贴图 =====
             function makeRadialSprite(size, stops) {
@@ -794,6 +840,7 @@
                 trail.length = 0;
                 particles.length = 0;
                 rings.length = 0;
+                words.length = 0;
                 state.headX = anchor.x;
                 state.headY = anchor.y;
                 state.frameAverage = 16.7;
@@ -1053,6 +1100,70 @@
                 }
             }
 
+            // ===== 从光点飘出的短句 =====
+            function pickPhrase() {
+                let index = Math.floor(Math.random() * PHRASES.length);
+
+                if (PHRASES.length > 1 && index === lastPhraseIndex) {
+                    index = (
+                        index
+                        + 1
+                        + Math.floor(Math.random() * (PHRASES.length - 1))
+                    ) % PHRASES.length;
+                }
+
+                lastPhraseIndex = index;
+                return PHRASES[index];
+            }
+
+            function spawnFloatingWord() {
+                if (words.length >= WORD_LANES.length) {
+                    words.shift();
+                }
+
+                const fontScale = clamp(
+                    Math.min(state.width, state.height) / 900,
+                    0.94,
+                    1.05
+                );
+                const slot = wordSerial % WORD_LANES.length;
+                const lane = WORD_LANES[slot];
+                const forward = WORD_FORWARD[slot];
+                const angle = HEADING + rand(-0.1, 0.08);
+                const speed = rand(30, 46) * (state.reducedMotion ? 0.55 : 1);
+                wordSerial += 1;
+
+                words.push({
+                    text: pickPhrase(),
+                    x: state.headX + DIR.x * forward + SIDE.x * lane + rand(-5, 5),
+                    y: state.headY + DIR.y * forward + SIDE.y * lane + rand(-4, 4),
+                    vx: Math.cos(angle) * speed + SIDE.x * rand(-2, 2),
+                    vy: Math.sin(angle) * speed + SIDE.y * rand(-2, 2) - rand(2, 6),
+                    age: 0,
+                    life: rand(3.8, 4.8),
+                    size: (16 + Math.random() * 2) * fontScale,
+                    seed: rand(0, TAU),
+                    alpha: rand(0.86, 0.98)
+                });
+            }
+
+            function updateWords(dt) {
+                for (let i = words.length - 1; i >= 0; i -= 1) {
+                    const word = words[i];
+                    word.age += dt;
+
+                    if (word.age >= word.life) {
+                        words.splice(i, 1);
+                        continue;
+                    }
+
+                    word.x += word.vx * dt;
+                    word.y += word.vy * dt;
+                    word.vx *= Math.exp(-0.18 * dt);
+                    word.vy -= 2.4 * dt;
+                }
+            }
+
             // ===== 交互 =====
             function resetIdleClock() {
                 state.lastInputAt = state.time;
@@ -1074,6 +1185,7 @@
                 }
 
                 emitBurst(150 + 55 * power, power);
+                spawnFloatingWord();
                 state.slowActive = false;
                 resetIdleClock();
             }
@@ -1083,6 +1195,7 @@
                     return;
                 }
 
+                clearPageSelection();
                 state.holding = true;
                 state.holdSource = source;
                 state.holdStartedAt = state.time;
@@ -1101,6 +1214,7 @@
                 state.holdStartedAt = 0;
                 state.nextAfterburnAt = 0;
                 state.afterburnIndex = 0;
+                clearPageSelection();
                 cursorEl.classList.remove("is-down");
                 resetIdleClock();
             }
@@ -1358,6 +1472,7 @@
                 updateTrail(dt);
                 updateParticles(dt);
                 updateRings(dt);
+                updateWords(dt);
                 updateBackground(dt);
                 updatePointerParallax(dt);
                 updateHud();
@@ -1855,6 +1970,60 @@
                 ctx.restore();
             }
 
+            function drawFloatingWords() {
+                if (words.length === 0) {
+                    return;
+                }
+
+                ctx.save();
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle";
+
+                for (const word of words) {
+                    const progress = clamp(word.age / word.life, 0, 1);
+                    const fadeIn = clamp(progress / 0.1, 0, 1);
+                    const fadeOut = progress < 0.62
+                        ? 1
+                        : 1 - easeInOutCubic((progress - 0.62) / 0.38);
+                    const alpha = word.alpha * fadeIn * fadeOut;
+
+                    if (alpha <= 0.01) {
+                        continue;
+                    }
+
+                    const sway = Math.sin(word.age * 1.15 + word.seed) * 4;
+                    const x = word.x + SIDE.x * sway;
+                    const y = word.y + SIDE.y * sway;
+                    const fontSize = word.size
+                        * (0.94 + Math.min(0.14, progress * 0.16));
+
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.font = `500 ${fontSize.toFixed(1)}px ${WORD_FONT_FAMILY}`;
+                    ctx.globalAlpha = alpha;
+                    ctx.lineJoin = "round";
+                    ctx.lineWidth = 2.2;
+                    ctx.strokeStyle = "rgba(2, 7, 15, 0.7)";
+                    ctx.strokeText(word.text, 0, 0);
+                    ctx.shadowColor = "rgba(78, 232, 255, 0.76)";
+                    ctx.shadowBlur = 13;
+                    ctx.fillStyle = "rgba(236, 255, 255, 0.98)";
+                    ctx.fillText(word.text, 0, 0);
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = alpha * 0.9;
+                    ctx.fillStyle = "rgba(118, 247, 255, 1)";
+                    ctx.fillRect(
+                        -12,
+                        -fontSize * 0.38,
+                        2,
+                        fontSize * 0.3
+                    );
+                    ctx.restore();
+                }
+
+                ctx.restore();
+            }
+
             function render() {
                 ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
                 ctx.clearRect(0, 0, state.width, state.height);
@@ -1889,6 +2058,7 @@
                 drawRings();
                 drawHead();
                 drawFlash();
+                drawFloatingWords();
             }
 
             // ===== 主循环 =====
@@ -1939,6 +2109,21 @@
                 cursorEl.classList.remove("is-visible");
                 state.pointerActive = false;
                 stopHold("pointer");
+            });
+
+            document.addEventListener("selectstart", (event) => {
+                event.preventDefault();
+                clearPageSelection();
+            });
+
+            document.addEventListener("selectionchange", () => {
+                if (state.holding) {
+                    clearPageSelection();
+                }
+            });
+
+            document.addEventListener("dragstart", (event) => {
+                event.preventDefault();
             });
 
             window.addEventListener("contextmenu", (event) => {
