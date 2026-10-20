@@ -1,0 +1,25 @@
+# 本地预览截图，线上页面不需要
+/preview-*.png
+
+# 临时预览或调试脚本
+/.preview-*
+*.log
+npm-debug.log*
+
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+
+# 环境变量
+.env
+.env.*
+
+# 编辑器与系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo

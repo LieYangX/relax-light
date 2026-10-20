@@ -1,0 +1,2001 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#03060b">
+    <title>逃逸速度 · 解压光点</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2303060b'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%2376f7ff' stroke-opacity='.35'/%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%2376f7ff'/%3E%3C/svg%3E">
+    <style>
+        :root {
+            --void: #03060b;
+            --ion: #76f7ff;
+            --arc: #2e7bff;
+            --core: #f4ffff;
+            --violet: #8b6bff;
+            --line: rgba(122, 230, 255, 0.24);
+            --muted: rgba(198, 241, 255, 0.46);
+            --quiet: rgba(198, 241, 255, 0.28);
+            --edge: clamp(18px, 3.2vw, 44px);
+            --safe-top: max(var(--edge), env(safe-area-inset-top));
+            --safe-right: max(var(--edge), env(safe-area-inset-right));
+            --safe-bottom: max(var(--edge), env(safe-area-inset-bottom));
+            --safe-left: max(var(--edge), env(safe-area-inset-left));
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        html {
+            background: var(--void);
+        }
+
+        body {
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: none;
+            background:
+                radial-gradient(circle at 12% 8%, rgba(20, 68, 112, 0.26), transparent 42%),
+                radial-gradient(circle at 82% 88%, rgba(77, 42, 140, 0.16), transparent 46%),
+                radial-gradient(circle at 58% 47%, rgba(16, 103, 130, 0.08), transparent 38%),
+                var(--void);
+            color: var(--core);
+            font-family: "Cascadia Mono", "SFMono-Regular", Consolas, "Microsoft YaHei", monospace;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: -24%;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(116deg, transparent 31%, rgba(38, 126, 174, 0.055) 47%, rgba(103, 63, 180, 0.04) 53%, transparent 69%),
+                radial-gradient(ellipse at 30% 20%, rgba(27, 90, 140, 0.12), transparent 55%),
+                radial-gradient(ellipse at 75% 80%, rgba(84, 45, 150, 0.08), transparent 58%);
+            filter: blur(38px);
+            transform: rotate(-8deg);
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            pointer-events: none;
+            opacity: 0.038;
+            mix-blend-mode: screen;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+        }
+
+        #scene {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .vignette {
+            position: fixed;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 57% 49%, transparent 38%, rgba(1, 4, 9, 0.26) 74%, rgba(1, 3, 7, 0.72) 100%),
+                linear-gradient(180deg, rgba(2, 6, 12, 0.2), transparent 22%, transparent 78%, rgba(2, 6, 12, 0.32));
+        }
+
+        .frame {
+            position: fixed;
+            inset: var(--edge);
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        .frame i {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-color: rgba(121, 229, 255, 0.22);
+            border-style: solid;
+        }
+
+        .frame i:nth-child(1) {
+            top: 0;
+            left: 0;
+            border-width: 1px 0 0 1px;
+        }
+
+        .frame i:nth-child(2) {
+            top: 0;
+            right: 0;
+            border-width: 1px 1px 0 0;
+        }
+
+        .frame i:nth-child(3) {
+            right: 0;
+            bottom: 0;
+            border-width: 0 1px 1px 0;
+        }
+
+        .frame i:nth-child(4) {
+            bottom: 0;
+            left: 0;
+            border-width: 0 0 1px 1px;
+        }
+
+        .hud {
+            position: fixed;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+        }
+
+        .hud-tr,
+        .hud-bl,
+        .hud-br {
+            position: absolute;
+            opacity: 0;
+            animation: hud-in 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .hud-tr {
+            top: var(--safe-top);
+            right: var(--safe-right);
+            text-align: right;
+            animation-delay: 520ms;
+        }
+
+        .hud-bl {
+            bottom: var(--safe-bottom);
+            left: var(--safe-left);
+            animation-delay: 680ms;
+        }
+
+        .hud-br {
+            right: var(--safe-right);
+            bottom: var(--safe-bottom);
+            text-align: right;
+            animation-delay: 840ms;
+        }
+
+        .kicker {
+            display: block;
+            color: var(--muted);
+            font-size: 8px;
+            line-height: 1.2;
+            letter-spacing: 0.31em;
+            white-space: nowrap;
+        }
+
+        .speed-figure {
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 2px;
+        }
+
+        .speed-value {
+            color: rgba(238, 255, 255, 0.94);
+            font-family: "Bahnschrift", "DIN Alternate", "Arial Narrow", sans-serif;
+            font-size: clamp(34px, 4.4vw, 54px);
+            font-weight: 300;
+            font-variant-numeric: tabular-nums;
+            line-height: 0.9;
+            letter-spacing: -0.035em;
+            text-shadow: 0 0 22px rgba(93, 230, 255, 0.16);
+            transition: color 160ms ease, text-shadow 160ms ease;
+        }
+
+        .speed-unit {
+            color: var(--muted);
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .meter {
+            position: relative;
+            width: clamp(108px, 11.5vw, 172px);
+            height: 1px;
+            margin: 12px 0 0 auto;
+            overflow: hidden;
+            background: rgba(123, 226, 255, 0.16);
+        }
+
+        .meter::before,
+        .meter::after {
+            content: "";
+            position: absolute;
+            top: -1px;
+            z-index: 2;
+            width: 1px;
+            height: 3px;
+            background: rgba(173, 245, 255, 0.44);
+        }
+
+        .meter::before {
+            left: 0;
+        }
+
+        .meter::after {
+            right: 0;
+        }
+
+        .meter-fill {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(46, 123, 255, 0.22), var(--ion));
+            box-shadow: 0 0 9px rgba(86, 238, 255, 0.54);
+            transform: scaleX(0.08);
+            transform-origin: left center;
+            transition: transform 90ms linear, background 160ms ease;
+        }
+
+        .mode-line {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 7px;
+            margin-top: 10px;
+            color: var(--quiet);
+            font-size: 8px;
+            letter-spacing: 0.24em;
+            transition: color 180ms ease;
+        }
+
+        .live-dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: var(--ion);
+            box-shadow: 0 0 7px rgba(103, 247, 255, 0.92);
+            animation: live-pulse 2.4s ease-in-out infinite;
+        }
+
+        .mode-line [data-mode].is-hot {
+            color: rgba(236, 255, 255, 0.9);
+        }
+
+        .hud.is-pulsing .speed-value {
+            color: #ffffff;
+            text-shadow: 0 0 11px rgba(188, 252, 255, 0.8), 0 0 34px rgba(67, 208, 255, 0.32);
+        }
+
+        .hud.is-pulsing .meter-fill {
+            background: linear-gradient(90deg, rgba(133, 246, 255, 0.72), #ffffff);
+        }
+
+        .hint {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: opacity 180ms ease;
+        }
+
+        .hint-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        kbd {
+            min-width: 31px;
+            padding: 4px 7px 3px;
+            border: 1px solid rgba(125, 235, 255, 0.28);
+            background: rgba(10, 28, 38, 0.38);
+            box-shadow: inset 0 0 12px rgba(83, 221, 255, 0.04);
+            color: rgba(223, 251, 255, 0.82);
+            font-family: inherit;
+            font-size: 9px;
+            font-weight: 400;
+            line-height: 1;
+            letter-spacing: 0.1em;
+            text-align: center;
+        }
+
+        .hint-slash {
+            color: var(--quiet);
+            font-size: 10px;
+        }
+
+        .hint-zh {
+            margin-left: 4px;
+            color: var(--muted);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+        }
+
+        .touch-only {
+            display: none;
+        }
+
+        .touch-hint {
+            align-items: center;
+            gap: 9px;
+            color: var(--muted);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+        }
+
+        .touch-hint::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border: 1px solid rgba(125, 235, 255, 0.7);
+            border-radius: 50%;
+            box-shadow: 0 0 9px rgba(93, 235, 255, 0.4);
+        }
+
+        .telemetry {
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 8px;
+            color: var(--quiet);
+            font-size: 8px;
+            letter-spacing: 0.18em;
+            white-space: nowrap;
+        }
+
+        .telemetry b {
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .telemetry-sep {
+            width: 18px;
+            height: 1px;
+            align-self: center;
+            background: rgba(125, 235, 255, 0.22);
+        }
+
+        .tickline {
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            gap: 7px;
+            height: 8px;
+            margin-top: 9px;
+        }
+
+        .tickline i {
+            display: block;
+            width: 1px;
+            height: 3px;
+            background: rgba(120, 230, 255, 0.2);
+        }
+
+        .tickline i:nth-child(3n) {
+            height: 7px;
+            background: rgba(120, 230, 255, 0.4);
+        }
+
+        .cursor {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 40;
+            width: 26px;
+            height: 26px;
+            margin: -13px 0 0 -13px;
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            transition: opacity 200ms ease;
+            will-change: transform;
+        }
+
+        .cursor.is-visible {
+            opacity: 1;
+        }
+
+        .cursor::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(164, 248, 255, 0.62);
+            border-radius: 50%;
+            box-shadow: 0 0 14px rgba(90, 232, 255, 0.2);
+            transition: transform 150ms ease, border-color 150ms ease;
+        }
+
+        .cursor::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 2px;
+            height: 2px;
+            margin: -1px 0 0 -1px;
+            border-radius: 50%;
+            background: var(--core);
+            box-shadow: 0 0 8px var(--ion);
+        }
+
+        .cursor.is-down::before {
+            border-color: rgba(255, 255, 255, 0.94);
+            transform: scale(0.72);
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @keyframes hud-in {
+            from {
+                opacity: 0;
+                transform: translateY(7px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes live-pulse {
+            0%,
+            100% {
+                opacity: 0.45;
+                transform: scale(0.82);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (pointer: fine) {
+            body {
+                cursor: none;
+            }
+
+            .cursor {
+                display: block;
+            }
+        }
+
+        @media (pointer: coarse) {
+            .desktop-only {
+                display: none;
+            }
+
+            .touch-only {
+                display: flex;
+            }
+
+            .cursor {
+                display: none;
+            }
+        }
+
+        @media (max-width: 720px) {
+            :root {
+                --edge: 17px;
+            }
+
+            .speed-value {
+                font-size: 30px;
+            }
+
+            .hud-br {
+                display: none;
+            }
+
+            .hint-row {
+                gap: 6px;
+            }
+
+            .hint-zh {
+                margin-left: 1px;
+                font-size: 10px;
+            }
+
+            .touch-hint {
+                font-size: 10px;
+            }
+
+            .frame i {
+                width: 18px;
+                height: 18px;
+            }
+        }
+
+        @media (max-height: 560px) {
+            .hud-br {
+                display: none;
+            }
+
+            .meter {
+                margin-top: 8px;
+            }
+
+            .mode-line {
+                margin-top: 7px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hud-tr,
+            .hud-bl,
+            .hud-br {
+                opacity: 0.88;
+                animation: none;
+            }
+
+            .live-dot {
+                animation: none;
+            }
+
+            .cursor::before {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="scene" role="img" aria-label="一枚光点沿对角线持续向左上方飞行，身后拖着发光轨迹。"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="frame" aria-hidden="true">
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+    </div>
+
+    <div class="hud" aria-hidden="true">
+        <div class="hud-tr">
+            <span class="kicker">VELOCITY</span>
+            <div class="speed-figure">
+                <span class="speed-value" data-speed>0.62</span>
+                <span class="speed-unit">c</span>
+            </div>
+            <div class="meter">
+                <span class="meter-fill" data-meter></span>
+            </div>
+            <div class="mode-line">
+                <span class="live-dot"></span>
+                <span data-mode>CRUISE</span>
+            </div>
+        </div>
+
+        <div class="hud-bl">
+            <div class="hint">
+                <span class="kicker">PULSE THRUST</span>
+                <div class="hint-row desktop-only">
+                    <kbd>LMB</kbd>
+                    <span class="hint-slash">/</span>
+                    <kbd>RMB</kbd>
+                    <span class="hint-zh">点击脉冲 · 长按持续加速</span>
+                </div>
+                <div class="touch-hint touch-only">轻触脉冲 · 长按持续加速</div>
+            </div>
+        </div>
+
+        <div class="hud-br">
+            <div class="telemetry">
+                <span>VECTOR</span>
+                <b>220°</b>
+                <span class="telemetry-sep"></span>
+                <span>WAKE</span>
+                <b>LIVE</b>
+            </div>
+            <div class="tickline">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="cursor" id="cursor" aria-hidden="true"></div>
+    <p class="sr-only">点击鼠标左键、右键，或按住空格键，可以让光点脉冲加速；持续按住会一直加速，并不断产生音爆光环。</p>
+
+    <script>
+        (() => {
+            "use strict";
+
+            // ===== 基础工具 =====
+            const TAU = Math.PI * 2;
+            const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+            const lerp = (a, b, t) => a + (b - a) * t;
+            const rand = (min, max) => min + Math.random() * (max - min);
+            const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+            const easeInOutCubic = (t) => (
+                t < 0.5
+                    ? 4 * t * t * t
+                    : 1 - Math.pow(-2 * t + 2, 3) / 2
+            );
+
+            // 运动方向固定为左上，220 度即从右下冲向左侧偏上
+            const HEADING_DEG = 220;
+            const HEADING = HEADING_DEG * Math.PI / 180;
+            const DIR = {
+                x: Math.cos(HEADING),
+                y: Math.sin(HEADING)
+            };
+            const BACK = {
+                x: -DIR.x,
+                y: -DIR.y
+            };
+            const SIDE = {
+                x: -DIR.y,
+                y: DIR.x
+            };
+
+            // ===== 页面元素 =====
+            const canvas = document.getElementById("scene");
+            const ctx = canvas.getContext("2d");
+            const hud = document.querySelector(".hud");
+            const speedEl = document.querySelector("[data-speed]");
+            const meterEl = document.querySelector("[data-meter]");
+            const modeEl = document.querySelector("[data-mode]");
+            const cursorEl = document.getElementById("cursor");
+            const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+            // ===== 场景参数 =====
+            const BASE_SPEED = 0.62;
+            const BOOST_GAIN = 1.15;
+            const MAX_BOOST = 1.65;
+            const BOOST_DECAY = 2.75;
+            const TRAIL_LIMIT = 200;
+            const PARTICLE_LIMIT = 500;
+            const RING_LIMIT = 18;
+            const anchor = { x: 0, y: 0 };
+
+            const state = {
+                width: 0,
+                height: 0,
+                dpr: 1,
+                time: 0,
+                lastTime: 0,
+                paused: false,
+                reducedMotion: motionQuery.matches,
+                quality: 1,
+                frameAverage: 16.7,
+                speed: BASE_SPEED,
+                displaySpeed: BASE_SPEED,
+                boost: 0,
+                shake: 0,
+                flash: 0,
+                zoom: 0,
+                slowActive: false,
+                slowStart: 0,
+                slowDuration: 3.2,
+                headX: 0,
+                headY: 0,
+                introDone: false,
+                trailAcc: 0,
+                particleAcc: 0,
+                lastInputAt: 0,
+                nextAutoAt: 4.8,
+                nextSlowAt: 12.4,
+                pointerX: 0,
+                pointerY: 0,
+                pointerActive: false,
+                parallaxX: 0,
+                parallaxY: 0,
+                mode: "",
+                pulsing: false,
+                holding: false,
+                holdSource: "",
+                holdStartedAt: 0,
+                nextAfterburnAt: 0,
+                afterburnIndex: 0
+            };
+
+            // 根据视口计算视觉尺寸，避免小屏上的光带过粗
+            function viewScale() {
+                const minSide = Math.min(
+                    state.width || window.innerWidth,
+                    state.height || window.innerHeight
+                );
+                return clamp(Math.pow(minSide / 900, 0.55), 0.6, 1.08);
+            }
+
+            function headViewScale() {
+                const minSide = Math.min(
+                    state.width || window.innerWidth,
+                    state.height || window.innerHeight
+                );
+                return clamp(minSide / 900, 0.72, 1.02);
+            }
+
+            // ===== 粒子与光环容器 =====
+            const stars = [];
+            const dust = [];
+            const trail = [];
+            const particles = [];
+            const rings = [];
+
+            // ===== 径向光晕贴图 =====
+            function makeRadialSprite(size, stops) {
+                const sprite = document.createElement("canvas");
+                sprite.width = size;
+                sprite.height = size;
+                const spriteCtx = sprite.getContext("2d");
+                const gradient = spriteCtx.createRadialGradient(
+                    size / 2,
+                    size / 2,
+                    0,
+                    size / 2,
+                    size / 2,
+                    size / 2
+                );
+
+                for (const [offset, color] of stops) {
+                    gradient.addColorStop(offset, color);
+                }
+
+                spriteCtx.fillStyle = gradient;
+                spriteCtx.fillRect(0, 0, size, size);
+                return sprite;
+            }
+
+            const halo = makeRadialSprite(512, [
+                [0, "rgba(255, 255, 255, 0.72)"],
+                [0.05, "rgba(196, 255, 255, 0.48)"],
+                [0.16, "rgba(86, 236, 255, 0.2)"],
+                [0.46, "rgba(35, 143, 255, 0.06)"],
+                [1, "rgba(3, 6, 11, 0)"]
+            ]);
+
+            const coreGlow = makeRadialSprite(128, [
+                [0, "rgba(255, 255, 255, 1)"],
+                [0.1, "rgba(255, 255, 255, 0.98)"],
+                [0.24, "rgba(180, 255, 255, 0.82)"],
+                [0.5, "rgba(82, 222, 255, 0.24)"],
+                [1, "rgba(0, 112, 255, 0)"]
+            ]);
+
+            // ===== 画布尺寸与位置 =====
+            function resize() {
+                state.width = window.innerWidth;
+                state.height = window.innerHeight;
+                state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = Math.round(state.width * state.dpr);
+                canvas.height = Math.round(state.height * state.dpr);
+                canvas.style.width = `${state.width}px`;
+                canvas.style.height = `${state.height}px`;
+                ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+
+                // 光点落在画面中偏右下，给左上方保留足够的冲刺空间
+                anchor.x = state.width * (state.width < 720 ? 0.64 : 0.62);
+                anchor.y = state.height * (state.width < 720 ? 0.48 : 0.53);
+
+                buildStars();
+                buildDust();
+                trail.length = 0;
+                particles.length = 0;
+                rings.length = 0;
+                state.headX = anchor.x;
+                state.headY = anchor.y;
+                state.frameAverage = 16.7;
+            }
+
+            function buildStars() {
+                stars.length = 0;
+                const count = Math.round(clamp(
+                    state.width * state.height / 12000,
+                    70,
+                    150
+                ));
+
+                for (let i = 0; i < count; i += 1) {
+                    const depth = rand(0.18, 1);
+                    stars.push({
+                        x: rand(-30, state.width + 30),
+                        y: rand(-30, state.height + 30),
+                        depth,
+                        size: rand(0.45, 1.45) * (0.65 + depth * 0.55),
+                        alpha: rand(0.18, 0.62) * (0.55 + depth * 0.45),
+                        phase: rand(0, TAU),
+                        flare: Math.random() < 0.07
+                    });
+                }
+            }
+
+            function buildDust() {
+                dust.length = 0;
+                const count = Math.round(clamp(
+                    state.width * state.height / 27000,
+                    24,
+                    58
+                ));
+
+                for (let i = 0; i < count; i += 1) {
+                    dust.push({
+                        x: rand(-40, state.width + 40),
+                        y: rand(-40, state.height + 40),
+                        depth: rand(0.45, 1),
+                        alpha: rand(0.05, 0.15),
+                        length: rand(0.7, 1.8)
+                    });
+                }
+            }
+
+            // ===== 背景流动 =====
+            function updateBackground(dt) {
+                const flow = 70 + state.speed * 560;
+
+                for (const star of stars) {
+                    star.x += BACK.x * flow * star.depth * dt;
+                    star.y += BACK.y * flow * star.depth * dt;
+
+                    if (star.x > state.width + 30) {
+                        star.x -= state.width + 60;
+                    }
+                    if (star.y > state.height + 30) {
+                        star.y -= state.height + 60;
+                    }
+                    if (star.x < -30) {
+                        star.x += state.width + 60;
+                    }
+                    if (star.y < -30) {
+                        star.y += state.height + 60;
+                    }
+                }
+
+                for (const mote of dust) {
+                    const speed = 120 + state.speed * 960;
+                    mote.x += BACK.x * speed * mote.depth * dt;
+                    mote.y += BACK.y * speed * mote.depth * dt;
+
+                    if (mote.x > state.width + 40) {
+                        mote.x -= state.width + 80;
+                    }
+                    if (mote.y > state.height + 40) {
+                        mote.y -= state.height + 80;
+                    }
+                    if (mote.x < -40) {
+                        mote.x += state.width + 80;
+                    }
+                    if (mote.y < -40) {
+                        mote.y += state.height + 80;
+                    }
+                }
+            }
+
+            // ===== 轨迹节点与飞散粒子 =====
+            function spawnTrailNode() {
+                if (trail.length >= TRAIL_LIMIT) {
+                    return;
+                }
+
+                trail.push({
+                    x: state.headX + rand(-1.2, 1.2),
+                    y: state.headY + rand(-1.2, 1.2),
+                    age: 0,
+                    life: rand(0.58, 0.94),
+                    offset: rand(-0.9, 0.9),
+                    seed: rand(0, TAU),
+                    speed: rand(0.84, 1.16)
+                });
+            }
+
+            function updateTrail(dt) {
+                for (let i = trail.length - 1; i >= 0; i -= 1) {
+                    const node = trail[i];
+                    node.age += dt;
+
+                    if (node.age >= node.life) {
+                        trail.splice(i, 1);
+                        continue;
+                    }
+
+                    const flow = 120 + state.speed * 355;
+                    node.x += BACK.x * flow * node.speed * dt;
+                    node.y += BACK.y * flow * node.speed * dt;
+                }
+            }
+
+            function spawnEmber(strength = 1, specificX = null, specificY = null) {
+                if (particles.length >= PARTICLE_LIMIT) {
+                    return;
+                }
+
+                const side = rand(-1, 1);
+                const push = rand(24, 132) * strength;
+                const palette = Math.random();
+                let color = "118, 242, 255";
+
+                if (palette > 0.86) {
+                    color = "165, 137, 255";
+                } else if (palette > 0.62) {
+                    color = "64, 181, 255";
+                } else if (palette > 0.28) {
+                    color = "206, 255, 255";
+                }
+
+                particles.push({
+                    x: specificX ?? state.headX + rand(-2.5, 2.5),
+                    y: specificY ?? state.headY + rand(-2.5, 2.5),
+                    px: specificX ?? state.headX,
+                    py: specificY ?? state.headY,
+                    vx: BACK.x * push + SIDE.x * side * rand(18, 95) + DIR.x * rand(-18, 24),
+                    vy: BACK.y * push + SIDE.y * side * rand(18, 95) + DIR.y * rand(-18, 24),
+                    age: 0,
+                    life: rand(0.32, 0.88),
+                    size: rand(0.7, 2.2) * (0.8 + strength * 0.3),
+                    alpha: rand(0.34, 0.92),
+                    color,
+                    streak: Math.random() < 0.34
+                });
+            }
+
+            function emitBurst(count, power) {
+                const maxCount = Math.round(
+                    count * (state.reducedMotion ? 0.38 : 1) * state.quality
+                );
+
+                for (let i = 0; i < maxCount; i += 1) {
+                    if (particles.length >= PARTICLE_LIMIT) {
+                        break;
+                    }
+
+                    const angle = rand(0, TAU);
+                    const radial = rand(14, 190) * power;
+                    const back = rand(35, 255) * power;
+                    const white = Math.random() < 0.42;
+                    const violet = !white && Math.random() < 0.09;
+
+                    particles.push({
+                        x: state.headX + Math.cos(angle) * rand(0, 5),
+                        y: state.headY + Math.sin(angle) * rand(0, 5),
+                        px: state.headX,
+                        py: state.headY,
+                        vx: Math.cos(angle) * radial + BACK.x * back,
+                        vy: Math.sin(angle) * radial + BACK.y * back,
+                        age: 0,
+                        life: rand(0.32, 1.05),
+                        size: rand(0.9, 3.2),
+                        alpha: rand(0.42, 1),
+                        color: white ? "236, 255, 255" : violet ? "160, 124, 255" : "83, 216, 255",
+                        streak: Math.random() < 0.56
+                    });
+                }
+            }
+
+            function updateParticles(dt) {
+                for (let i = particles.length - 1; i >= 0; i -= 1) {
+                    const particle = particles[i];
+                    particle.age += dt;
+
+                    if (particle.age >= particle.life) {
+                        particles.splice(i, 1);
+                        continue;
+                    }
+
+                    particle.px = particle.x;
+                    particle.py = particle.y;
+                    particle.x += particle.vx * dt;
+                    particle.y += particle.vy * dt;
+
+                    const drag = Math.exp(-2.15 * dt);
+                    particle.vx *= drag;
+                    particle.vy *= drag;
+                    particle.vx += BACK.x * state.speed * 28 * dt;
+                    particle.vy += BACK.y * state.speed * 28 * dt;
+                }
+            }
+
+            // ===== 音爆环 =====
+            function spawnRing(power = 1, delay = 0, auto = false, index = 0, afterburn = false) {
+                if (rings.length >= RING_LIMIT) {
+                    rings.shift();
+                }
+
+                const limit = Math.min(state.width, state.height);
+                const life = afterburn
+                    ? rand(0.95, 1.12)
+                    : auto
+                        ? rand(1.12, 1.32)
+                        : rand(1.3, 1.5);
+                rings.push({
+                    x: state.headX + BACK.x * index * 9,
+                    y: state.headY + BACK.y * index * 9,
+                    age: -delay,
+                    life,
+                    power,
+                    auto,
+                    afterburn,
+                    startRadius: 7 + power * 10,
+                    endRadius: limit * (auto ? 0.25 + power * 0.1 : 0.34 + power * 0.1),
+                    rotation: HEADING + Math.PI / 2,
+                    seed: rand(0, TAU),
+                    spin: auto ? rand(-0.24, 0.24) : rand(-0.65, 0.65)
+                });
+            }
+
+            function updateRings(dt) {
+                for (let i = rings.length - 1; i >= 0; i -= 1) {
+                    const ring = rings[i];
+                    ring.age += dt;
+
+                    if (ring.age >= ring.life) {
+                        rings.splice(i, 1);
+                        continue;
+                    }
+
+                    if (ring.age < 0) {
+                        continue;
+                    }
+
+                    const drift = 20 + state.speed * 92;
+                    ring.x += BACK.x * drift * dt;
+                    ring.y += BACK.y * drift * dt;
+                }
+            }
+
+            // ===== 交互 =====
+            function resetIdleClock() {
+                state.lastInputAt = state.time;
+                state.nextAutoAt = state.time + rand(4.4, 6.8);
+                state.nextSlowAt = state.time + rand(11.5, 16.5);
+            }
+
+            function triggerPulse(power = 1) {
+                state.boost = Math.min(MAX_BOOST, state.boost + BOOST_GAIN * power);
+                state.flash = Math.min(1, state.flash + 0.74 * power);
+
+                if (!state.reducedMotion) {
+                    state.shake = Math.min(8, state.shake + 4.8 * power);
+                    state.zoom = Math.min(0.065, state.zoom + 0.042 * power);
+                }
+
+                for (let i = 0; i < 3; i += 1) {
+                    spawnRing((0.98 - i * 0.13) * power, i * 0.055, false, i);
+                }
+
+                emitBurst(150 + 55 * power, power);
+                state.slowActive = false;
+                resetIdleClock();
+            }
+
+            function startHold(source) {
+                if (state.holding) {
+                    return;
+                }
+
+                state.holding = true;
+                state.holdSource = source;
+                state.holdStartedAt = state.time;
+                state.nextAfterburnAt = state.time + 0.24;
+                state.afterburnIndex = 0;
+                triggerPulse(1);
+            }
+
+            function stopHold(source = "") {
+                if (!state.holding || (source && state.holdSource !== source)) {
+                    return;
+                }
+
+                state.holding = false;
+                state.holdSource = "";
+                state.holdStartedAt = 0;
+                state.nextAfterburnAt = 0;
+                state.afterburnIndex = 0;
+                cursorEl.classList.remove("is-down");
+                resetIdleClock();
+            }
+
+            function triggerAutoPulse() {
+                spawnRing(0.42, 0, true, 0);
+            }
+
+            function startSlowAcceleration() {
+                state.slowActive = true;
+                state.slowStart = state.time;
+                state.slowDuration = rand(3.1, 3.9);
+                spawnRing(0.52, 0.18, true, 0);
+            }
+
+            function slowFactor() {
+                if (!state.slowActive) {
+                    return 0;
+                }
+
+                const progress = (state.time - state.slowStart) / state.slowDuration;
+
+                if (progress >= 1) {
+                    state.slowActive = false;
+                    return 0;
+                }
+
+                if (progress < 0.28) {
+                    return easeOutCubic(progress / 0.28);
+                }
+
+                if (progress < 0.56) {
+                    return 1;
+                }
+
+                return 1 - easeInOutCubic((progress - 0.56) / 0.44);
+            }
+
+            function updatePointerParallax(dt) {
+                const targetX = state.pointerActive
+                    ? (state.pointerX / state.width - 0.5) * 8
+                    : 0;
+                const targetY = state.pointerActive
+                    ? (state.pointerY / state.height - 0.5) * 6
+                    : 0;
+                const easing = 1 - Math.exp(-dt * 4.2);
+                state.parallaxX = lerp(state.parallaxX, targetX, easing);
+                state.parallaxY = lerp(state.parallaxY, targetY, easing);
+            }
+
+            // ===== 速度与位置更新 =====
+            function updateHead(dt) {
+                const sway = state.reducedMotion ? 0 : 3.4;
+                let x = anchor.x
+                    + Math.sin(state.time * 0.82) * sway
+                    + Math.sin(state.time * 2.1) * 1.1;
+                let y = anchor.y
+                    + Math.cos(state.time * 0.68) * sway * 0.7
+                    + Math.cos(state.time * 1.73) * 1.15;
+
+                x += SIDE.x * Math.sin(state.time * 0.56) * 2;
+                y += SIDE.y * Math.sin(state.time * 0.56) * 2;
+                x += DIR.x * state.boost * 8;
+                y += DIR.y * state.boost * 8;
+
+                const introDuration = state.reducedMotion ? 0.42 : 1.25;
+                const introProgress = clamp(state.time / introDuration, 0, 1);
+                const introEase = 1 - Math.pow(1 - introProgress, 4);
+                const introOffset = (1 - introEase)
+                    * Math.min(state.width, state.height)
+                    * 0.8;
+
+                x += BACK.x * introOffset;
+                y += BACK.y * introOffset;
+                state.headX = x;
+                state.headY = y;
+
+                if (!state.introDone && introProgress >= 1) {
+                    state.introDone = true;
+                    spawnRing(0.46, 0, true, 0);
+                }
+            }
+
+            function updateSpeed(dt) {
+                if (state.holding) {
+                    // 长按期间目标速度缓慢爬升，松开后才开始衰减
+                    const holdDuration = state.time - state.holdStartedAt;
+                    const holdRamp = clamp(holdDuration / 4.5, 0, 1);
+                    const targetBoost = 1.15 + holdRamp * 0.45;
+                    state.boost = Math.min(
+                        MAX_BOOST,
+                        Math.max(state.boost, targetBoost)
+                    );
+                } else {
+                    state.boost *= Math.exp(-BOOST_DECAY * dt);
+                }
+
+                state.speed = BASE_SPEED
+                    + Math.sin(state.time * 0.9) * 0.015
+                    + slowFactor() * 0.4
+                    + state.boost * 1.55;
+                state.displaySpeed = lerp(
+                    state.displaySpeed,
+                    state.speed,
+                    1 - Math.exp(-dt * 10)
+                );
+                state.shake *= Math.exp(-7.5 * dt);
+                state.flash *= Math.exp(-4.7 * dt);
+                state.zoom *= Math.exp(-4.8 * dt);
+
+                if (state.holding && !state.reducedMotion) {
+                    state.shake = Math.max(state.shake, 0.85);
+                    state.zoom = Math.max(state.zoom, 0.016);
+                }
+
+                if (state.reducedMotion) {
+                    state.shake = 0;
+                    state.zoom = 0;
+                }
+
+                if (state.shake < 0.01) {
+                    state.shake = 0;
+                }
+
+                if (state.flash < 0.003) {
+                    state.flash = 0;
+                }
+
+                if (state.zoom < 0.0005) {
+                    state.zoom = 0;
+                }
+            }
+
+            function updateAfterburn() {
+                if (!state.holding || state.time < state.nextAfterburnAt) {
+                    return;
+                }
+
+                state.afterburnIndex += 1;
+                const accentRing = state.afterburnIndex % 2 === 0;
+                const power = accentRing ? 0.56 : 0.72;
+
+                // 自动环和带刻度的亮环交替出现，让连续音爆有呼吸感
+                spawnRing(power, 0, !accentRing, 0, true);
+
+                if (state.afterburnIndex % 5 === 0) {
+                    spawnRing(power * 0.7, 0.08, true, 1, true);
+                }
+
+                state.nextAfterburnAt = state.time + 0.28;
+            }
+
+            function updateIdleEvents() {
+                if (state.holding) {
+                    return;
+                }
+
+                const idleTime = state.time - state.lastInputAt;
+
+                if (idleTime < 3.2) {
+                    return;
+                }
+
+                if (state.time >= state.nextAutoAt) {
+                    triggerAutoPulse();
+                    state.nextAutoAt = state.time + rand(4.2, 7.0);
+                }
+
+                if (state.time >= state.nextSlowAt) {
+                    startSlowAcceleration();
+                    state.nextSlowAt = state.time + rand(12.5, 18);
+                }
+            }
+
+            function updateEmission(dt) {
+                const trailRate = (58 + state.speed * 82 + state.boost * 155)
+                    * (state.reducedMotion ? 0.58 : 1);
+                state.trailAcc += dt * trailRate;
+
+                while (state.trailAcc >= 1) {
+                    state.trailAcc -= 1;
+                    spawnTrailNode();
+                }
+
+                const emberRate = (8 + state.speed * 21 + state.boost * 150)
+                    * state.quality
+                    * (state.reducedMotion ? 0.58 : 1);
+                state.particleAcc += dt * emberRate;
+
+                while (state.particleAcc >= 1) {
+                    state.particleAcc -= 1;
+                    spawnEmber(0.72 + state.boost * 0.3);
+                }
+
+                if (trail.length > 8 && Math.random() < dt * (6 + state.boost * 18)) {
+                    const node = trail[Math.floor(Math.random() * trail.length)];
+                    spawnEmber(0.5, node.x, node.y);
+                }
+            }
+
+            function updateHud() {
+                const speedText = state.displaySpeed.toFixed(2);
+
+                if (speedEl.textContent !== speedText) {
+                    speedEl.textContent = speedText;
+                }
+
+                const ratio = clamp((state.displaySpeed - 0.42) / 2.7, 0, 1);
+                meterEl.style.transform = `scaleX(${ratio.toFixed(3)})`;
+
+                const nextMode = state.holding
+                    ? "AFTERBURN"
+                    : state.boost > 0.3
+                        ? "OVERDRIVE"
+                        : state.slowActive
+                            ? "DRIFT PULSE"
+                            : "CRUISE";
+
+                if (state.mode !== nextMode) {
+                    state.mode = nextMode;
+                    modeEl.textContent = nextMode;
+                    modeEl.classList.toggle(
+                        "is-hot",
+                        state.holding || nextMode === "OVERDRIVE"
+                    );
+                }
+
+                const pulsing = state.boost > 0.22;
+
+                if (state.pulsing !== pulsing) {
+                    state.pulsing = pulsing;
+                    hud.classList.toggle("is-pulsing", pulsing);
+                }
+            }
+
+            // ===== 帧更新 =====
+            function update(dt) {
+                state.time += dt;
+
+                if (dt > 0) {
+                    state.frameAverage = state.frameAverage * 0.95 + dt * 1000 * 0.05;
+
+                    if (state.frameAverage > 26) {
+                        state.quality = Math.max(0.62, state.quality - 0.012);
+                    } else if (state.frameAverage < 19) {
+                        state.quality = Math.min(1, state.quality + 0.006);
+                    }
+                }
+
+                updateSpeed(dt);
+                updateHead(dt);
+                updateAfterburn();
+                updateIdleEvents();
+                updateEmission(dt);
+                updateTrail(dt);
+                updateParticles(dt);
+                updateRings(dt);
+                updateBackground(dt);
+                updatePointerParallax(dt);
+                updateHud();
+            }
+
+            // ===== 绘制辅助 =====
+            function tracePath(points) {
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+
+                for (let i = 1; i < points.length - 1; i += 1) {
+                    const current = points[i];
+                    const next = points[i + 1];
+                    const midX = (current.x + next.x) / 2;
+                    const midY = (current.y + next.y) / 2;
+                    ctx.quadraticCurveTo(current.x, current.y, midX, midY);
+                }
+
+                if (points.length > 1) {
+                    const last = points[points.length - 1];
+                    ctx.lineTo(last.x, last.y);
+                }
+            }
+
+            function buildTrailPoints() {
+                const scale = viewScale();
+                const points = [{
+                    x: state.headX,
+                    y: state.headY,
+                    age: 0,
+                    life: 1
+                }];
+
+                for (let i = trail.length - 1; i >= 0; i -= 1) {
+                    const node = trail[i];
+                    const progress = node.age / node.life;
+                    const sway = Math.sin(node.age * 7.2 + node.seed)
+                        * (1.5 + state.boost * 1.1)
+                        * progress
+                        * scale;
+                    const offset = node.offset * (1 - progress * 0.4) + sway;
+
+                    points.push({
+                        x: node.x + SIDE.x * offset,
+                        y: node.y + SIDE.y * offset,
+                        age: node.age,
+                        life: node.life
+                    });
+                }
+
+                return points;
+            }
+
+            // ===== 各层绘制 =====
+            function drawAmbient() {
+                const radius = Math.min(state.width, state.height) * 1.75;
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.translate(state.headX, state.headY);
+                ctx.rotate(HEADING);
+                ctx.scale(1.4, 0.82);
+                ctx.globalAlpha = 0.12 + state.boost * 0.045;
+                ctx.drawImage(halo, -radius / 2, -radius / 2, radius, radius);
+                ctx.restore();
+            }
+
+            function drawDatum() {
+                const span = Math.hypot(state.width, state.height) * 0.78;
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.setLineDash([1.4, 20]);
+                ctx.lineDashOffset = -state.time * (26 + state.speed * 58);
+                ctx.strokeStyle = "rgba(105, 225, 255, 0.09)";
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(anchor.x - DIR.x * span, anchor.y - DIR.y * span);
+                ctx.lineTo(anchor.x + DIR.x * span, anchor.y + DIR.y * span);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function drawStars() {
+                const stretchBase = Math.max(0, state.speed - 0.58) * 37
+                    + state.boost * 30;
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.lineCap = "round";
+
+                for (const star of stars) {
+                    const twinkle = 0.68 + 0.32 * Math.sin(
+                        state.time * 1.25 + star.phase
+                    );
+                    const alpha = clamp(star.alpha * twinkle, 0, 0.9);
+                    const length = (1.1 + stretchBase * star.depth)
+                        * (star.flare ? 1.55 : 1);
+
+                    if (length > 2.4) {
+                        ctx.strokeStyle = `rgba(156, 238, 255, ${alpha * 0.82})`;
+                        ctx.lineWidth = Math.max(0.55, star.size * 0.7);
+                        ctx.beginPath();
+                        ctx.moveTo(star.x - BACK.x * length, star.y - BACK.y * length);
+                        ctx.lineTo(star.x, star.y);
+                        ctx.stroke();
+                    } else {
+                        ctx.fillStyle = `rgba(190, 247, 255, ${alpha})`;
+                        ctx.fillRect(
+                            star.x - star.size / 2,
+                            star.y - star.size / 2,
+                            star.size,
+                            star.size
+                        );
+                    }
+
+                    if (star.flare && !state.reducedMotion) {
+                        ctx.strokeStyle = `rgba(155, 240, 255, ${alpha * 0.42})`;
+                        ctx.lineWidth = 0.6;
+                        ctx.beginPath();
+                        ctx.moveTo(star.x - 4.5, star.y);
+                        ctx.lineTo(star.x + 4.5, star.y);
+                        ctx.moveTo(star.x, star.y - 4.5);
+                        ctx.lineTo(star.x, star.y + 4.5);
+                        ctx.stroke();
+                    }
+                }
+
+                ctx.restore();
+            }
+
+            function drawDust() {
+                const lengthBase = 6 + state.speed * 43 + state.boost * 36;
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.lineCap = "round";
+
+                for (const mote of dust) {
+                    const length = lengthBase * mote.depth * mote.length;
+                    const alpha = mote.alpha * (0.8 + state.boost * 0.45);
+                    ctx.strokeStyle = `rgba(91, 202, 255, ${alpha})`;
+                    ctx.lineWidth = 0.6 + mote.depth * 0.9;
+                    ctx.beginPath();
+                    ctx.moveTo(mote.x - BACK.x * length, mote.y - BACK.y * length);
+                    ctx.lineTo(mote.x, mote.y);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+
+            function drawTrail() {
+                if (trail.length < 2) {
+                    return;
+                }
+
+                const points = buildTrailPoints();
+                const head = points[0];
+                const tail = points[points.length - 1];
+                const boost = state.boost;
+                const scale = viewScale();
+
+                if (Math.hypot(tail.x - head.x, tail.y - head.y) < 6) {
+                    return;
+                }
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+
+                // 外层冷光，负责把轨迹从背景里托起来
+                const auraGradient = ctx.createLinearGradient(
+                    head.x, head.y, tail.x, tail.y
+                );
+                auraGradient.addColorStop(0, "rgba(185, 255, 255, 0.34)");
+                auraGradient.addColorStop(0.18, "rgba(75, 227, 255, 0.22)");
+                auraGradient.addColorStop(0.58, "rgba(31, 132, 255, 0.08)");
+                auraGradient.addColorStop(1, "rgba(15, 49, 140, 0)");
+                ctx.strokeStyle = auraGradient;
+                ctx.lineWidth = (17 + boost * 11) * scale;
+                tracePath(points);
+                ctx.stroke();
+
+                // 中层青蓝光带
+                const bodyGradient = ctx.createLinearGradient(
+                    head.x, head.y, tail.x, tail.y
+                );
+                bodyGradient.addColorStop(0, "rgba(234, 255, 255, 0.82)");
+                bodyGradient.addColorStop(0.2, "rgba(105, 240, 255, 0.52)");
+                bodyGradient.addColorStop(0.64, "rgba(32, 137, 255, 0.12)");
+                bodyGradient.addColorStop(1, "rgba(12, 58, 160, 0)");
+                ctx.strokeStyle = bodyGradient;
+                ctx.lineWidth = (4.8 + boost * 3) * scale;
+                tracePath(points);
+                ctx.stroke();
+
+                // 高亮核心丝线
+                const coreGradient = ctx.createLinearGradient(
+                    head.x, head.y, tail.x, tail.y
+                );
+                coreGradient.addColorStop(0, "rgba(255, 255, 255, 0.96)");
+                coreGradient.addColorStop(0.28, "rgba(205, 254, 255, 0.74)");
+                coreGradient.addColorStop(0.7, "rgba(93, 221, 255, 0.22)");
+                coreGradient.addColorStop(1, "rgba(53, 144, 255, 0)");
+                ctx.strokeStyle = coreGradient;
+                ctx.lineWidth = (1.1 + boost * 0.75) * scale;
+                tracePath(points);
+                ctx.stroke();
+
+                // 少量垂直刻度，像数据包在尾迹上排布
+                ctx.lineCap = "butt";
+                for (let i = 12; i < points.length; i += 17) {
+                    const point = points[i];
+                    const progress = point.age / point.life;
+                    const alpha = (1 - progress) * 0.36;
+                    const half = (2.2 + (1 - progress) * 2.2) * scale;
+
+                    if (alpha <= 0.02) {
+                        continue;
+                    }
+
+                    ctx.strokeStyle = `rgba(191, 250, 255, ${alpha})`;
+                    ctx.lineWidth = 0.8 * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(point.x - SIDE.x * half, point.y - SIDE.y * half);
+                    ctx.lineTo(point.x + SIDE.x * half, point.y + SIDE.y * half);
+                    ctx.stroke();
+                }
+
+                // 头部前方的一小段速度拖影
+                const leadLength = (15 + boost * 34) * scale;
+                ctx.strokeStyle = `rgba(228, 255, 255, ${0.34 + boost * 0.25})`;
+                ctx.lineWidth = 0.9 * scale;
+                ctx.lineCap = "round";
+                ctx.beginPath();
+                ctx.moveTo(state.headX + DIR.x * 3.5, state.headY + DIR.y * 3.5);
+                ctx.lineTo(
+                    state.headX + DIR.x * leadLength,
+                    state.headY + DIR.y * leadLength
+                );
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function drawParticles() {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                for (const particle of particles) {
+                    const progress = particle.age / particle.life;
+                    const fade = (1 - progress) * (1 - progress);
+                    const alpha = clamp(fade * particle.alpha, 0, 0.95);
+
+                    if (alpha <= 0.004) {
+                        continue;
+                    }
+
+                    if (particle.streak) {
+                        ctx.strokeStyle = `rgba(${particle.color}, ${alpha})`;
+                        ctx.lineWidth = Math.max(0.55, particle.size * (1 - progress * 0.55));
+                        ctx.beginPath();
+                        ctx.moveTo(particle.px, particle.py);
+                        ctx.lineTo(particle.x, particle.y);
+                        ctx.stroke();
+                    } else {
+                        ctx.fillStyle = `rgba(${particle.color}, ${alpha})`;
+                        const size = Math.max(0.55, particle.size * (1 - progress * 0.7));
+                        ctx.fillRect(
+                            particle.x - size / 2,
+                            particle.y - size / 2,
+                            size,
+                            size
+                        );
+                    }
+                }
+
+                ctx.restore();
+            }
+
+            function drawRings() {
+                const scale = viewScale();
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                for (const ring of rings) {
+                    if (ring.age < 0) {
+                        continue;
+                    }
+
+                    const progress = clamp(ring.age / ring.life, 0, 1);
+                    const radius = lerp(
+                        ring.startRadius,
+                        ring.endRadius,
+                        easeOutCubic(progress)
+                    );
+                    const appear = Math.sin(Math.min(1, progress * 5) * Math.PI / 2);
+                    const alpha = appear
+                        * Math.pow(1 - progress, 1.5)
+                        * clamp(ring.power, 0, 1.2)
+                        * (ring.auto ? 0.62 : 1);
+
+                    if (alpha <= 0.003) {
+                        continue;
+                    }
+
+                    const rx = radius;
+                    const ry = radius * 0.34;
+                    const spin = ring.seed + ring.age * ring.spin;
+                    const afterburn = ring.afterburn;
+                    const segmentCount = afterburn ? 3 : 4;
+
+                    ctx.save();
+                    ctx.translate(ring.x, ring.y);
+                    ctx.rotate(ring.rotation);
+
+                    // 轻微紫边，让冲击波摆脱普通发光圆环
+                    ctx.strokeStyle = `rgba(141, 104, 255, ${alpha * 0.24})`;
+                    ctx.lineWidth = (afterburn ? 2 : 2.6) * scale;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, rx + 1.8, ry + 0.9, 0, 0, TAU);
+                    ctx.stroke();
+
+                    // 宽而淡的外层辉光
+                    ctx.strokeStyle = `rgba(49, 175, 255, ${alpha * 0.19})`;
+                    ctx.lineWidth = (afterburn ? 8 : 11) * scale;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, rx, ry, 0, 0, TAU);
+                    ctx.stroke();
+
+                    // 主环的完整底色
+                    ctx.strokeStyle = `rgba(121, 239, 255, ${alpha * 0.35})`;
+                    ctx.lineWidth = 1.3 * scale;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, rx, ry, 0, 0, TAU);
+                    ctx.stroke();
+
+                    // 断开的扫描弧段，是这页的主要科技感符号
+                    for (let segment = 0; segment < segmentCount; segment += 1) {
+                        const start = spin + segment * TAU / segmentCount + 0.14;
+                        const end = start + TAU / segmentCount - 0.28;
+                        const strong = segment === 0;
+
+                        ctx.strokeStyle = strong
+                            ? `rgba(240, 255, 255, ${alpha * 0.96})`
+                            : `rgba(147, 246, 255, ${alpha * 0.42})`;
+                        ctx.lineWidth = (strong ? 2.2 : 0.9) * scale;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, rx, ry, 0, start, end);
+                        ctx.stroke();
+                    }
+
+                    if (!ring.auto) {
+                        // 环形刻度只出现在手动加速时，长按环适当减量
+                        const tickCount = afterburn ? 8 : 12;
+
+                        for (let tick = 0; tick < tickCount; tick += 1) {
+                            const angle = tick / tickCount * TAU + spin * 0.4;
+                            const cos = Math.cos(angle);
+                            const sin = Math.sin(angle);
+
+                            ctx.strokeStyle = `rgba(179, 249, 255, ${alpha * 0.38})`;
+                            ctx.lineWidth = 0.8 * scale;
+                            ctx.beginPath();
+                            ctx.moveTo(cos * (rx - 3), sin * (ry - 1.2));
+                            ctx.lineTo(cos * (rx + 5.5), sin * (ry + 2.3));
+                            ctx.stroke();
+                        }
+
+                        const nodeCount = afterburn ? 3 : 4;
+
+                        for (let node = 0; node < nodeCount; node += 1) {
+                            const angle = node / nodeCount * TAU + spin;
+                            const x = Math.cos(angle) * rx;
+                            const y = Math.sin(angle) * ry;
+
+                            ctx.fillStyle = `rgba(247, 255, 255, ${alpha * 0.94})`;
+                            ctx.beginPath();
+                            ctx.arc(x, y, 1.55 * scale, 0, TAU);
+                            ctx.fill();
+                        }
+                    }
+
+                    ctx.restore();
+                }
+
+                ctx.restore();
+            }
+
+            function drawHead() {
+                const x = state.headX
+                    + (state.reducedMotion ? 0 : Math.sin(state.time * 31) * 0.45);
+                const y = state.headY
+                    + (state.reducedMotion ? 0 : Math.cos(state.time * 27) * 0.45);
+                const boost = state.boost;
+                const scale = headViewScale();
+                const haloSize = (230 + boost * 190) * scale;
+                const pulse = 1 + Math.sin(state.time * 4.8) * 0.012;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                // 沿运动方向拉长的头部光晕
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(HEADING);
+                ctx.scale((1 + boost * 0.4) * pulse, (1 - boost * 0.1) * pulse);
+                ctx.globalAlpha = 0.27 + boost * 0.1;
+                ctx.drawImage(coreGlow, -haloSize / 2, -haloSize / 2, haloSize, haloSize);
+                ctx.restore();
+
+                // 两层光晕叠加出白热核心
+                ctx.globalAlpha = 0.9;
+                ctx.translate(x, y);
+                ctx.rotate(HEADING);
+                ctx.scale(1 + boost * 0.44, 1 - boost * 0.13);
+                ctx.drawImage(
+                    coreGlow,
+                    -38 * scale,
+                    -38 * scale,
+                    76 * scale,
+                    76 * scale
+                );
+                ctx.restore();
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.translate(x, y);
+
+                const rayLength = (15 + boost * 30) * scale;
+                ctx.strokeStyle = `rgba(187, 250, 255, ${0.25 + boost * 0.29})`;
+                ctx.lineWidth = 0.95 * scale;
+                ctx.lineCap = "round";
+                ctx.beginPath();
+                ctx.moveTo(-SIDE.x * rayLength, -SIDE.y * rayLength);
+                ctx.lineTo(SIDE.x * rayLength, SIDE.y * rayLength);
+                ctx.stroke();
+
+                ctx.strokeStyle = `rgba(222, 255, 255, ${0.15 + boost * 0.2})`;
+                ctx.beginPath();
+                ctx.moveTo(-DIR.x * rayLength * 0.56, -DIR.y * rayLength * 0.56);
+                ctx.lineTo(DIR.x * rayLength * 0.56, DIR.y * rayLength * 0.56);
+                ctx.stroke();
+
+                // 高亮时加一点青紫分离，像高速镜头边缘
+                if (boost > 0.04) {
+                    const split = 1.4 + boost * 2.1;
+                    ctx.globalAlpha = Math.min(0.62, boost * 0.48);
+                    ctx.fillStyle = "rgba(111, 247, 255, 0.8)";
+                    ctx.beginPath();
+                    ctx.arc(-SIDE.x * split, -SIDE.y * split, 2.5 + boost * 1.1, 0, TAU);
+                    ctx.fill();
+
+                    ctx.fillStyle = "rgba(141, 104, 255, 0.8)";
+                    ctx.beginPath();
+                    ctx.arc(SIDE.x * split, SIDE.y * split, 2.3 + boost * 1.1, 0, TAU);
+                    ctx.fill();
+                }
+
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = "#ffffff";
+                ctx.beginPath();
+                ctx.arc(0, 0, 2.4 + boost * 1.3, 0, TAU);
+                ctx.fill();
+
+                ctx.globalAlpha = 0.38 + boost * 0.22;
+                ctx.strokeStyle = "rgba(228, 255, 255, 0.86)";
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.arc(0, 0, 8.5 + boost * 5, 0, TAU);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function drawFlash() {
+                if (state.flash <= 0.004) {
+                    return;
+                }
+
+                const radius = Math.max(state.width, state.height) * 0.86;
+                const gradient = ctx.createRadialGradient(
+                    state.headX,
+                    state.headY,
+                    0,
+                    state.headX,
+                    state.headY,
+                    radius
+                );
+                gradient.addColorStop(0, `rgba(226, 255, 255, ${0.17 * state.flash})`);
+                gradient.addColorStop(0.24, `rgba(87, 223, 255, ${0.072 * state.flash})`);
+                gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, state.width, state.height);
+                ctx.restore();
+            }
+
+            function render() {
+                ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+                ctx.clearRect(0, 0, state.width, state.height);
+
+                const time = state.time;
+                const shakeX = state.reducedMotion
+                    ? 0
+                    : Math.sin(time * 97) * state.shake
+                        + Math.sin(time * 53) * state.shake * 0.42;
+                const shakeY = state.reducedMotion
+                    ? 0
+                    : Math.cos(time * 83) * state.shake;
+
+                ctx.translate(
+                    shakeX + state.parallaxX,
+                    shakeY + state.parallaxY
+                );
+
+                if (state.zoom > 0.0005) {
+                    const zoom = 1 + state.zoom;
+                    ctx.translate(state.headX, state.headY);
+                    ctx.scale(zoom, zoom);
+                    ctx.translate(-state.headX, -state.headY);
+                }
+
+                drawAmbient();
+                drawDatum();
+                drawStars();
+                drawDust();
+                drawTrail();
+                drawParticles();
+                drawRings();
+                drawHead();
+                drawFlash();
+            }
+
+            // ===== 主循环 =====
+            function frame(now) {
+                const dt = Math.min((now - state.lastTime) / 1000, 0.05);
+                state.lastTime = now;
+
+                if (!state.paused) {
+                    update(dt);
+                    render();
+                }
+
+                requestAnimationFrame(frame);
+            }
+
+            // ===== 事件绑定 =====
+            window.addEventListener("resize", resize);
+
+            window.addEventListener("pointermove", (event) => {
+                state.pointerX = event.clientX;
+                state.pointerY = event.clientY;
+                state.pointerActive = event.pointerType === "mouse";
+                cursorEl.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+                cursorEl.classList.add("is-visible");
+            }, { passive: true });
+
+            window.addEventListener("pointerdown", (event) => {
+                if (event.button !== 0 && event.button !== 2) {
+                    return;
+                }
+
+                event.preventDefault();
+                cursorEl.classList.add("is-down");
+                startHold("pointer");
+            });
+
+            window.addEventListener("pointerup", () => {
+                stopHold("pointer");
+                cursorEl.classList.remove("is-down");
+            });
+
+            window.addEventListener("pointercancel", () => {
+                stopHold("pointer");
+                cursorEl.classList.remove("is-down");
+            });
+
+            document.documentElement.addEventListener("pointerleave", () => {
+                cursorEl.classList.remove("is-visible");
+                state.pointerActive = false;
+                stopHold("pointer");
+            });
+
+            window.addEventListener("contextmenu", (event) => {
+                event.preventDefault();
+            });
+
+            window.addEventListener("keydown", (event) => {
+                if (event.code !== "Space" || event.repeat) {
+                    return;
+                }
+
+                event.preventDefault();
+                startHold("keyboard");
+            });
+
+            window.addEventListener("keyup", (event) => {
+                if (event.code !== "Space") {
+                    return;
+                }
+
+                event.preventDefault();
+                stopHold("keyboard");
+            });
+
+            window.addEventListener("blur", () => {
+                stopHold();
+                cursorEl.classList.remove("is-visible");
+                cursorEl.classList.remove("is-down");
+                state.pointerActive = false;
+            });
+
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden) {
+                    stopHold();
+                }
+
+                state.paused = document.hidden;
+                state.lastTime = performance.now();
+
+                if (!state.paused) {
+                    cursorEl.classList.remove("is-visible");
+                }
+            });
+
+            motionQuery.addEventListener("change", (event) => {
+                state.reducedMotion = event.matches;
+
+                if (state.reducedMotion) {
+                    state.shake = 0;
+                }
+            });
+
+            // ===== 启动 =====
+            resize();
+            state.lastTime = performance.now();
+            requestAnimationFrame(frame);
+        })();
+    </script>
+</body>
+</html>
