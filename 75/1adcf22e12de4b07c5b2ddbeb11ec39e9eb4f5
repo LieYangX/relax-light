@@ -1,0 +1,16 @@
+README.md
+  h_1d1a3d05761997 7,10
+index.html
+  h_1d1a3d05761997 28-34,96-97,661-668,753-780,842,1102-1165,1187,1197,1216,1474,1972-2025,2060,2113-2127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "751adcf22e12de4b07c5b2ddbeb11ec39e9eb4f5",
+  "prompts": {},
+  "humans": {
+    "h_1d1a3d05761997": {
+      "author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
