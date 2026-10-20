@@ -86,6 +86,30 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
         }
 
+        body[data-palette="frost"] {
+            --ion: #e6fbff;
+            --arc: #8ecbff;
+            --line: rgba(211, 246, 255, 0.28);
+            --muted: rgba(228, 250, 255, 0.58);
+            --quiet: rgba(228, 250, 255, 0.36);
+        }
+
+        body[data-palette="aurora"] {
+            --ion: #c4a4ff;
+            --arc: #815cff;
+            --line: rgba(205, 173, 255, 0.28);
+            --muted: rgba(225, 208, 255, 0.58);
+            --quiet: rgba(225, 208, 255, 0.36);
+        }
+
+        body[data-palette="gold"] {
+            --ion: #ffd58a;
+            --arc: #ff9e4a;
+            --line: rgba(255, 218, 154, 0.28);
+            --muted: rgba(255, 231, 190, 0.58);
+            --quiet: rgba(255, 231, 190, 0.36);
+        }
+
         #scene {
             position: fixed;
             inset: 0;
@@ -95,6 +119,32 @@
             height: 100%;
             touch-action: none;
             -webkit-user-drag: none;
+        }
+
+        .palette-tint {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0;
+            background-color: #76f7ff;
+            mix-blend-mode: color;
+            transition: opacity 900ms ease, background-color 900ms ease;
+        }
+
+        body[data-palette="frost"] .palette-tint {
+            background-color: #e6fbff;
+            opacity: 0.72;
+        }
+
+        body[data-palette="aurora"] .palette-tint {
+            background-color: #9a6cff;
+            opacity: 0.58;
+        }
+
+        body[data-palette="gold"] .palette-tint {
+            background-color: #ffc35c;
+            opacity: 0.58;
         }
 
         .vignette {
@@ -281,6 +331,31 @@
             color: rgba(236, 255, 255, 0.9);
         }
 
+        .meta-line {
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+            color: var(--quiet);
+            font-size: 8px;
+            letter-spacing: 0.16em;
+            white-space: nowrap;
+        }
+
+        .meta-line b {
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .resonance-readout {
+            color: var(--ion);
+        }
+
+        .resonance-readout b {
+            color: var(--core);
+        }
+
         .hud.is-pulsing .speed-value {
             color: #ffffff;
             text-shadow: 0 0 11px rgba(188, 252, 255, 0.8), 0 0 34px rgba(67, 208, 255, 0.32);
@@ -354,6 +429,101 @@
             box-shadow: 0 0 9px rgba(93, 235, 255, 0.4);
         }
 
+        .hint-tools {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 2px;
+            flex-wrap: wrap;
+            pointer-events: auto;
+        }
+
+        .rhythm-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 7px;
+            border: 1px solid rgba(125, 235, 255, 0.22);
+            background: rgba(10, 28, 38, 0.34);
+            color: var(--quiet);
+            font-family: inherit;
+            font-size: 8px;
+            line-height: 1;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+        }
+
+        .rhythm-toggle b {
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .rhythm-toggle:hover,
+        .rhythm-toggle:focus-visible {
+            border-color: rgba(125, 235, 255, 0.55);
+            color: var(--muted);
+            outline: none;
+        }
+
+        .rhythm-toggle.is-on {
+            border-color: rgba(125, 235, 255, 0.55);
+            background: rgba(22, 55, 70, 0.46);
+            color: var(--core);
+        }
+
+        .rhythm-toggle.is-on b {
+            color: var(--ion);
+        }
+
+        .tool-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--quiet);
+            transition: background 180ms ease, box-shadow 180ms ease;
+        }
+
+        .rhythm-toggle.is-on .tool-dot {
+            background: var(--ion);
+            box-shadow: 0 0 8px var(--ion);
+        }
+
+        .palette-switcher {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .palette-switcher[hidden] {
+            display: none;
+        }
+
+        .swatch {
+            width: 13px;
+            height: 13px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            background: var(--swatch);
+            opacity: 0.38;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 2px rgba(3, 6, 11, 0.56);
+            transition: opacity 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
+        .swatch:hover,
+        .swatch:focus-visible {
+            opacity: 0.78;
+            outline: none;
+        }
+
+        .swatch.is-active {
+            opacity: 1;
+            box-shadow: inset 0 0 0 2px rgba(3, 6, 11, 0.56), 0 0 8px var(--swatch);
+            transform: scale(1.08);
+        }
+
         .telemetry {
             display: flex;
             align-items: baseline;
@@ -396,6 +566,34 @@
         .tickline i:nth-child(3n) {
             height: 7px;
             background: rgba(120, 230, 255, 0.4);
+        }
+
+        .unlock-toast {
+            position: fixed;
+            left: 50%;
+            top: calc(var(--safe-top) + 6px);
+            z-index: 12;
+            max-width: min(82vw, 460px);
+            padding: 7px 13px 6px;
+            border-top: 1px solid rgba(125, 235, 255, 0.22);
+            border-bottom: 1px solid rgba(125, 235, 255, 0.22);
+            background: linear-gradient(90deg, transparent, rgba(4, 15, 24, 0.58), transparent);
+            color: var(--core);
+            font-size: 9px;
+            line-height: 1.2;
+            letter-spacing: 0.18em;
+            text-align: center;
+            text-shadow: 0 0 12px rgba(118, 247, 255, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -7px);
+            transition: opacity 220ms ease, transform 220ms ease;
+            white-space: nowrap;
+        }
+
+        .unlock-toast.is-visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
         }
 
         .cursor {
@@ -517,6 +715,74 @@
             text-shadow: 0 0 8px rgba(118, 247, 255, 0.8);
         }
 
+        .cursor.is-target .charge-bar,
+        .cursor.is-target .charge-ticks {
+            stroke: #fff5d6;
+            filter: drop-shadow(0 0 6px rgba(255, 229, 160, 0.95));
+        }
+
+        .cursor.is-target .charge-label {
+            color: #fff8e7;
+            text-shadow: 0 0 10px rgba(255, 225, 150, 0.9);
+        }
+
+        .cursor.is-sync .charge-bar {
+            stroke: #d8ffff;
+            filter: drop-shadow(0 0 6px rgba(118, 247, 255, 0.9));
+        }
+
+        .cursor.is-sync .charge-label {
+            color: #eaffff;
+        }
+
+        .charge-stop-a {
+            stop-color: #2e7bff;
+        }
+
+        .charge-stop-b {
+            stop-color: #76f7ff;
+        }
+
+        .charge-stop-c {
+            stop-color: #f4ffff;
+        }
+
+        body[data-palette="frost"] .charge-stop-a {
+            stop-color: #8ecbff;
+        }
+
+        body[data-palette="frost"] .charge-stop-b {
+            stop-color: #e6fbff;
+        }
+
+        body[data-palette="frost"] .charge-stop-c {
+            stop-color: #ffffff;
+        }
+
+        body[data-palette="aurora"] .charge-stop-a {
+            stop-color: #815cff;
+        }
+
+        body[data-palette="aurora"] .charge-stop-b {
+            stop-color: #c4a4ff;
+        }
+
+        body[data-palette="aurora"] .charge-stop-c {
+            stop-color: #f7f0ff;
+        }
+
+        body[data-palette="gold"] .charge-stop-a {
+            stop-color: #ff9e4a;
+        }
+
+        body[data-palette="gold"] .charge-stop-b {
+            stop-color: #ffd58a;
+        }
+
+        body[data-palette="gold"] .charge-stop-c {
+            stop-color: #fff8e7;
+        }
+
         .sr-only {
             position: absolute;
             width: 1px;
@@ -608,6 +874,34 @@
                 font-size: 10px;
             }
 
+            .unlock-toast {
+                top: calc(var(--safe-top) + 104px);
+                max-width: 88vw;
+                font-size: 8px;
+                letter-spacing: 0.14em;
+            }
+
+            .meta-line {
+                gap: 6px;
+                font-size: 7px;
+                letter-spacing: 0.12em;
+            }
+
+            .hint-tools {
+                gap: 7px;
+            }
+
+            .rhythm-toggle {
+                min-height: 30px;
+                padding: 6px 8px;
+                font-size: 7px;
+            }
+
+            .swatch {
+                width: 18px;
+                height: 18px;
+            }
+
             .frame i {
                 width: 18px;
                 height: 18px;
@@ -642,14 +936,17 @@
 
             .cursor::before,
             .charge-ring,
-            .charge-label {
+            .charge-label,
+            .palette-tint,
+            .unlock-toast {
                 transition: none;
             }
         }
     </style>
 </head>
-<body>
-    <canvas id="scene" role="img" aria-label="一枚光点沿对角线持续向左上方飞行，身后拖着发光轨迹。"></canvas>
+<body data-palette="cyan">
+    <canvas id="scene" role="img" aria-label="一枚光点沿对角线持续向左上方飞行，身后拖着发光轨迹，前方有光环和星图等待穿越与点亮。"></canvas>
+    <div class="palette-tint" aria-hidden="true"></div>
     <div class="vignette" aria-hidden="true"></div>
     <div class="frame" aria-hidden="true">
         <i></i>
@@ -658,7 +955,7 @@
         <i></i>
     </div>
 
-    <div class="hud" aria-hidden="true">
+    <div class="hud">
         <div class="hud-tr">
             <span class="kicker">VELOCITY</span>
             <div class="speed-figure">
@@ -672,6 +969,14 @@
                 <span class="live-dot"></span>
                 <span data-mode>CRUISE</span>
             </div>
+            <div class="meta-line">
+                <span class="resonance-readout" data-resonance-readout hidden>
+                    RES <b data-resonance>×0</b>
+                </span>
+                <span class="dust-readout">
+                    DUST <b data-dust>0 / 30</b>
+                </span>
+            </div>
         </div>
 
         <div class="hud-bl">
@@ -681,9 +986,17 @@
                     <kbd>LMB</kbd>
                     <span class="hint-slash">/</span>
                     <kbd>RMB</kbd>
-                    <span class="hint-zh">点击脉冲 · 长按持续加速</span>
+                    <span class="hint-zh">点击脉冲 · 长按蓄力，光环重合时松开</span>
                 </div>
-                <div class="touch-hint touch-only">轻触脉冲 · 长按持续加速</div>
+                <div class="touch-hint touch-only">轻触脉冲 · 长按蓄力，光环重合时松开</div>
+                <div class="hint-tools" id="hint-tools">
+                    <button class="rhythm-toggle" id="rhythm-toggle" type="button" aria-pressed="false">
+                        <span class="tool-dot" aria-hidden="true"></span>
+                        <span>RHYTHM</span>
+                        <b data-rhythm-state>OFF</b>
+                    </button>
+                    <div class="palette-switcher" id="palette-switcher" hidden></div>
+                </div>
             </div>
         </div>
 
@@ -701,13 +1014,15 @@
         </div>
     </div>
 
+    <div class="unlock-toast" id="unlock-toast" role="status" aria-live="polite"></div>
+
     <div class="cursor" id="cursor" aria-hidden="true">
         <svg class="charge-ring" viewBox="0 0 100 100" aria-hidden="true">
             <defs>
                 <linearGradient id="charge-gradient" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stop-color="#2e7bff"></stop>
-                    <stop offset="0.55" stop-color="#76f7ff"></stop>
-                    <stop offset="1" stop-color="#f4ffff"></stop>
+                    <stop class="charge-stop-a" offset="0"></stop>
+                    <stop class="charge-stop-b" offset="0.55"></stop>
+                    <stop class="charge-stop-c" offset="1"></stop>
                 </linearGradient>
             </defs>
             <circle class="charge-ticks" cx="50" cy="50" r="47" pathLength="100"></circle>
@@ -716,7 +1031,7 @@
         </svg>
         <span class="charge-label">HOLD</span>
     </div>
-    <p class="sr-only">点击鼠标左键、右键，或按住空格键，可以让光点脉冲加速；持续按住会一直加速，并不断产生音爆光环，光标周围显示蓄力进度。</p>
+    <p class="sr-only">点击鼠标左键、右键，或按空格键让光点加速，点击与长按会收集星尘。长按蓄力后，在迎面光环与光点重合时松开可以触发完美音爆，提升共鸣等级。页面还提供节奏模式和已解锁配色。</p>
 
     <script>
         (() => {
@@ -768,6 +1083,14 @@
             const cursorEl = document.getElementById("cursor");
             const chargeBar = document.querySelector(".charge-bar");
             const chargeLabel = document.querySelector(".charge-label");
+            const dustEl = document.querySelector("[data-dust]");
+            const resonanceReadout = document.querySelector("[data-resonance-readout]");
+            const resonanceEl = document.querySelector("[data-resonance]");
+            const rhythmToggle = document.getElementById("rhythm-toggle");
+            const rhythmStateEl = document.querySelector("[data-rhythm-state]");
+            const paletteSwitcher = document.getElementById("palette-switcher");
+            const hintTools = document.getElementById("hint-tools");
+            const unlockToast = document.getElementById("unlock-toast");
             const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
             // ===== 场景参数 =====
@@ -776,10 +1099,25 @@
             const MAX_BOOST = 1.65;
             const BOOST_DECAY = 2.75;
             const HOLD_RAMP_SECONDS = 4.5;
+            const MAX_RESONANCE = 5;
+            const DUST_PER_STAR = 5;
+            const CONSTELLATION_STAR_COUNT = 6;
+            const DUST_PER_CONSTELLATION = DUST_PER_STAR * CONSTELLATION_STAR_COUNT;
+            const GATE_APPROACH_SECONDS = 2.7;
+            const RHYTHM_INTERVAL = 0.8;
+            const RHYTHM_WINDOW = 0.13;
+            const STORAGE_KEY = "guang-progress-v1";
             const TRAIL_LIMIT = 200;
             const PARTICLE_LIMIT = 500;
             const RING_LIMIT = 18;
             const anchor = { x: 0, y: 0 };
+
+            const PALETTES = [
+                { id: "cyan", name: "深空青蓝", color: "#76f7ff", unlockAt: 0 },
+                { id: "frost", name: "冷白", color: "#e6fbff", unlockAt: 1 },
+                { id: "aurora", name: "极光紫", color: "#a07cff", unlockAt: 2 },
+                { id: "gold", name: "深空金", color: "#ffca73", unlockAt: 3 }
+            ];
 
             const state = {
                 width: 0,
@@ -821,7 +1159,19 @@
                 nextAfterburnAt: 0,
                 afterburnIndex: 0,
                 chargePercent: -1,
-                chargeFull: false
+                chargeFull: false,
+                chargeLabel: "HOLD",
+                gateWindow: 48,
+                nextGateAt: 4.8,
+                nextDustAt: 0,
+                dust: 0,
+                constellationsDone: 0,
+                resonance: 0,
+                bestResonance: 0,
+                activePalette: "cyan",
+                unlockedPalettes: ["cyan"],
+                rhythmMode: false,
+                tutorialSeen: false
             };
 
             // 根据视口计算视觉尺寸，避免小屏上的光带过粗
@@ -848,11 +1198,16 @@
             const particles = [];
             const rings = [];
             const words = [];
+            const gates = [];
+            const perfectPops = [];
+            const starFlashes = [];
+            const constellationCelebrations = [];
             const WORD_LANES = [0, 80, -90];
             const WORD_FORWARD = [45, 90, 60];
             const WORD_FONT_FAMILY = '"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif';
             let lastPhraseIndex = -1;
             let wordSerial = 0;
+            let toastTimer = 0;
 
             const PHRASES = [
                 "你正在向前",
@@ -875,6 +1230,51 @@
                 "去成为自己的光",
                 "向前的每一步都算数",
                 "不必回头，向前就好"
+            ];
+
+            const PHRASE_PACKS = {
+                frost: [
+                    "先把呼吸放慢",
+                    "冷静，也是一种速度",
+                    "你不需要急着抵达"
+                ],
+                aurora: [
+                    "让光替你说话",
+                    "你已经穿过黑暗",
+                    "前方有新的颜色"
+                ],
+                gold: [
+                    "你正在成为自己的太阳",
+                    "带着光，继续走",
+                    "这一次，不必低调"
+                ]
+            };
+
+            const CONSTELLATION_PATTERNS = [
+                [
+                    [0.11, 0.33],
+                    [0.18, 0.23],
+                    [0.28, 0.27],
+                    [0.24, 0.39],
+                    [0.34, 0.45],
+                    [0.41, 0.34]
+                ],
+                [
+                    [0.08, 0.55],
+                    [0.16, 0.47],
+                    [0.24, 0.52],
+                    [0.31, 0.44],
+                    [0.27, 0.60],
+                    [0.38, 0.57]
+                ],
+                [
+                    [0.34, 0.16],
+                    [0.42, 0.22],
+                    [0.49, 0.16],
+                    [0.45, 0.30],
+                    [0.54, 0.34],
+                    [0.58, 0.24]
+                ]
             ];
 
             // ===== 径向光晕贴图 =====
@@ -931,6 +1331,11 @@
                 // 光点落在画面中偏右下，给左上方保留足够的冲刺空间
                 anchor.x = state.width * (state.width < 720 ? 0.64 : 0.62);
                 anchor.y = state.height * (state.width < 720 ? 0.48 : 0.53);
+                state.gateWindow = clamp(
+                    Math.min(state.width, state.height) * 0.07,
+                    30,
+                    64
+                );
 
                 buildStars();
                 buildDust();
@@ -938,6 +1343,13 @@
                 particles.length = 0;
                 rings.length = 0;
                 words.length = 0;
+                gates.length = 0;
+                perfectPops.length = 0;
+                starFlashes.length = 0;
+                state.nextGateAt = Math.max(
+                    state.nextGateAt,
+                    state.time + 2.5
+                );
                 state.headX = anchor.x;
                 state.headY = anchor.y;
                 state.frameAverage = 16.7;
@@ -1150,7 +1562,14 @@
             }
 
             // ===== 音爆环 =====
-            function spawnRing(power = 1, delay = 0, auto = false, index = 0, afterburn = false) {
+            function spawnRing(
+                power = 1,
+                delay = 0,
+                auto = false,
+                index = 0,
+                afterburn = false,
+                perfect = false
+            ) {
                 if (rings.length >= RING_LIMIT) {
                     rings.shift();
                 }
@@ -1169,6 +1588,7 @@
                     power,
                     auto,
                     afterburn,
+                    perfect,
                     startRadius: 7 + power * 10,
                     endRadius: limit * (auto ? 0.25 + power * 0.1 : 0.34 + power * 0.1),
                     rotation: HEADING + Math.PI / 2,
@@ -1198,19 +1618,24 @@
             }
 
             // ===== 从光点飘出的短句 =====
-            function pickPhrase() {
-                let index = Math.floor(Math.random() * PHRASES.length);
+            function getPhrasePool() {
+                return PHRASES.concat(PHRASE_PACKS[state.activePalette] || []);
+            }
 
-                if (PHRASES.length > 1 && index === lastPhraseIndex) {
+            function pickPhrase() {
+                const pool = getPhrasePool();
+                let index = Math.floor(Math.random() * pool.length);
+
+                if (pool.length > 1 && index === lastPhraseIndex) {
                     index = (
                         index
                         + 1
-                        + Math.floor(Math.random() * (PHRASES.length - 1))
-                    ) % PHRASES.length;
+                        + Math.floor(Math.random() * (pool.length - 1))
+                    ) % pool.length;
                 }
 
                 lastPhraseIndex = index;
-                return PHRASES[index];
+                return pool[index];
             }
 
             function spawnFloatingWord() {
@@ -1238,9 +1663,15 @@
                     vy: Math.sin(angle) * speed + SIDE.y * rand(-2, 2) - rand(2, 6),
                     age: 0,
                     life: rand(3.8, 4.8),
-                    size: (16 + Math.random() * 2) * fontScale,
+                    size: (16 + Math.random() * 2 + state.resonance * 0.45) * fontScale,
                     seed: rand(0, TAU),
-                    alpha: rand(0.86, 0.98)
+                    alpha: clamp(
+                        rand(0.86, 0.98) + state.resonance * 0.012,
+                        0,
+                        1
+                    ),
+                    warm: state.resonance >= 4,
+                    glow: 13 + state.resonance * 2
                 });
             }
 
@@ -1258,6 +1689,498 @@
                     word.y += word.vy * dt;
                     word.vx *= Math.exp(-0.18 * dt);
                     word.vy -= 2.4 * dt;
+                }
+            }
+
+            // ===== 星尘、星图与配色存档 =====
+            function showToast(text, duration = 2400) {
+                if (!unlockToast) {
+                    return;
+                }
+
+                unlockToast.textContent = text;
+                unlockToast.classList.add("is-visible");
+                window.clearTimeout(toastTimer);
+                toastTimer = window.setTimeout(() => {
+                    unlockToast.classList.remove("is-visible");
+                }, duration);
+            }
+
+            function loadProgress() {
+                let data = null;
+
+                try {
+                    data = JSON.parse(
+                        window.localStorage.getItem(STORAGE_KEY) || "null"
+                    );
+                } catch {
+                    data = null;
+                }
+
+                if (!data || typeof data !== "object") {
+                    return;
+                }
+
+                const dustTotal = Number.isFinite(data.dust)
+                    ? Math.max(0, Math.floor(data.dust))
+                    : 0;
+                state.dust = dustTotal;
+                state.constellationsDone = Math.floor(
+                    dustTotal / DUST_PER_CONSTELLATION
+                );
+
+                const derived = PALETTES
+                    .filter((palette) => palette.unlockAt <= state.constellationsDone)
+                    .map((palette) => palette.id);
+                const stored = Array.isArray(data.unlockedPalettes)
+                    ? data.unlockedPalettes
+                    : [];
+                state.unlockedPalettes = Array.from(new Set([
+                    "cyan",
+                    ...derived,
+                    ...stored.filter((id) => PALETTES.some((palette) => palette.id === id))
+                ]));
+                state.activePalette = state.unlockedPalettes.includes(data.activePalette)
+                    ? data.activePalette
+                    : "cyan";
+                state.rhythmMode = data.rhythmMode === true;
+                state.tutorialSeen = data.tutorialSeen === true;
+                state.bestResonance = Number.isFinite(data.bestResonance)
+                    ? clamp(Math.floor(data.bestResonance), 0, MAX_RESONANCE)
+                    : 0;
+            }
+
+            function saveProgress() {
+                try {
+                    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        dust: state.dust,
+                        unlockedPalettes: state.unlockedPalettes,
+                        activePalette: state.activePalette,
+                        rhythmMode: state.rhythmMode,
+                        tutorialSeen: state.tutorialSeen,
+                        bestResonance: state.bestResonance
+                    }));
+                } catch {
+                    // 隐私模式下 localStorage 可能不可用，不影响当前页面运行
+                }
+            }
+
+            function currentDustProgress() {
+                return state.dust % DUST_PER_CONSTELLATION;
+            }
+
+            function currentStars() {
+                return Math.floor(currentDustProgress() / DUST_PER_STAR);
+            }
+
+            function currentPatternIndex() {
+                return state.constellationsDone % CONSTELLATION_PATTERNS.length;
+            }
+
+            function updateProgressHud() {
+                const progress = currentDustProgress();
+                dustEl.textContent = `${String(progress).padStart(2, "0")} / ${DUST_PER_CONSTELLATION}`;
+
+                if (state.resonance > 0) {
+                    resonanceReadout.hidden = false;
+                    resonanceEl.textContent = `×${state.resonance}`;
+                } else {
+                    resonanceReadout.hidden = true;
+                }
+            }
+
+            function buildPaletteSwitcher() {
+                paletteSwitcher.innerHTML = "";
+
+                for (const palette of PALETTES) {
+                    if (!state.unlockedPalettes.includes(palette.id)) {
+                        continue;
+                    }
+
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "swatch";
+                    button.dataset.palette = palette.id;
+                    button.style.setProperty("--swatch", palette.color);
+                    button.title = palette.name;
+                    button.setAttribute("aria-label", `切换配色：${palette.name}`);
+                    button.setAttribute(
+                        "aria-pressed",
+                        String(palette.id === state.activePalette)
+                    );
+                    button.classList.toggle(
+                        "is-active",
+                        palette.id === state.activePalette
+                    );
+                    paletteSwitcher.appendChild(button);
+                }
+
+                paletteSwitcher.hidden = paletteSwitcher.childElementCount <= 1;
+            }
+
+            function updatePaletteSwitcherState() {
+                for (const button of paletteSwitcher.querySelectorAll(".swatch")) {
+                    const active = button.dataset.palette === state.activePalette;
+                    button.classList.toggle("is-active", active);
+                    button.setAttribute("aria-pressed", String(active));
+                }
+            }
+
+            function setPalette(id, persist = true) {
+                if (!state.unlockedPalettes.includes(id)) {
+                    return;
+                }
+
+                state.activePalette = id;
+                document.body.dataset.palette = id;
+                lastPhraseIndex = -1;
+
+                if (paletteSwitcher.childElementCount !== state.unlockedPalettes.length) {
+                    buildPaletteSwitcher();
+                } else {
+                    updatePaletteSwitcherState();
+                }
+
+                if (persist) {
+                    saveProgress();
+                }
+            }
+
+            function cyclePalette() {
+                if (state.unlockedPalettes.length <= 1) {
+                    return;
+                }
+
+                const index = state.unlockedPalettes.indexOf(state.activePalette);
+                const next = state.unlockedPalettes[
+                    (index + 1) % state.unlockedPalettes.length
+                ];
+                setPalette(next);
+                const palette = PALETTES.find((item) => item.id === next);
+                showToast(palette ? palette.name : "SIGNAL", 1400);
+            }
+
+            function unlockPaletteFor(completed) {
+                const palette = PALETTES.find(
+                    (item) => item.unlockAt === completed && item.unlockAt > 0
+                );
+
+                if (!palette || state.unlockedPalettes.includes(palette.id)) {
+                    return false;
+                }
+
+                state.unlockedPalettes.push(palette.id);
+                setPalette(palette.id, false);
+                showToast(`NEW SIGNAL // ${palette.name}`, 3200);
+                saveProgress();
+                return true;
+            }
+
+            function celebrateConstellation(patternIndex) {
+                constellationCelebrations.push({
+                    patternIndex,
+                    age: 0,
+                    life: 3.8
+                });
+            }
+
+            function addDust(amount) {
+                if (!Number.isFinite(amount) || amount <= 0) {
+                    return;
+                }
+
+                const beforeDust = state.dust;
+                const afterDust = beforeDust + Math.max(1, Math.round(amount));
+                const beforeDone = Math.floor(
+                    beforeDust / DUST_PER_CONSTELLATION
+                );
+                const afterDone = Math.floor(afterDust / DUST_PER_CONSTELLATION);
+                const beforeStars = Math.floor(
+                    (beforeDust % DUST_PER_CONSTELLATION) / DUST_PER_STAR
+                );
+                const afterStars = Math.floor(
+                    (afterDust % DUST_PER_CONSTELLATION) / DUST_PER_STAR
+                );
+                state.dust = afterDust;
+                state.constellationsDone = afterDone;
+
+                if (afterDone > beforeDone) {
+                    let unlocked = false;
+
+                    for (
+                        let completed = beforeDone + 1;
+                        completed <= afterDone;
+                        completed += 1
+                    ) {
+                        celebrateConstellation(
+                            (completed - 1) % CONSTELLATION_PATTERNS.length
+                        );
+                        unlocked = unlockPaletteFor(completed) || unlocked;
+                    }
+
+                    if (!unlocked) {
+                        showToast(`CONSTELLATION // ${afterDone}`, 2400);
+                    }
+                } else if (afterStars > beforeStars) {
+                    const pattern = CONSTELLATION_PATTERNS[currentPatternIndex()];
+
+                    for (let index = beforeStars; index < afterStars; index += 1) {
+                        const point = pattern[index];
+
+                        if (!point) {
+                            continue;
+                        }
+
+                        starFlashes.push({
+                            x: point[0] * state.width,
+                            y: point[1] * state.height,
+                            age: 0,
+                            life: 1.35
+                        });
+                    }
+                }
+
+                updateProgressHud();
+                saveProgress();
+            }
+
+            function addResonance(amount) {
+                const previous = state.resonance;
+                state.resonance = clamp(
+                    state.resonance + amount,
+                    0,
+                    MAX_RESONANCE
+                );
+
+                if (state.resonance !== previous) {
+                    state.bestResonance = Math.max(
+                        state.bestResonance,
+                        state.resonance
+                    );
+                    updateProgressHud();
+                    saveProgress();
+                }
+            }
+
+            // ===== 光环、完美释放与节奏 =====
+            function gateReady() {
+                return gates.find(
+                    (gate) => !gate.hit && Math.abs(gate.along) <= state.gateWindow
+                );
+            }
+
+            function beatProximity() {
+                const beat = Math.round(state.time / RHYTHM_INTERVAL)
+                    * RHYTHM_INTERVAL;
+                return Math.abs(state.time - beat);
+            }
+
+            function pushStatusPop(text, size, color, life = 1.05) {
+                perfectPops.push({
+                    text,
+                    x: state.headX + DIR.x * 12,
+                    y: state.headY + DIR.y * 12 - 12,
+                    age: 0,
+                    life,
+                    vy: -28,
+                    size,
+                    color
+                });
+            }
+
+            function spawnGate() {
+                if (!state.introDone || gates.length > 0) {
+                    return;
+                }
+
+                const limit = Math.min(state.width, state.height);
+                const distance = limit * 0.95;
+                let approach = GATE_APPROACH_SECONDS;
+
+                if (state.rhythmMode) {
+                    const targetBeat = Math.ceil(
+                        (state.time + 2) / RHYTHM_INTERVAL
+                    ) * RHYTHM_INTERVAL;
+                    approach = Math.max(1.7, targetBeat - state.time);
+                }
+
+                gates.push({
+                    x: state.headX + DIR.x * distance,
+                    y: state.headY + DIR.y * distance,
+                    along: distance,
+                    speed: distance / approach,
+                    radius: limit * 0.105,
+                    age: 0,
+                    seed: rand(0, TAU),
+                    hit: false
+                });
+
+                if (!state.tutorialSeen) {
+                    state.tutorialSeen = true;
+                    showToast("光环重合时松手 · PERFECT", 3000);
+                    saveProgress();
+                }
+            }
+
+            function updateGates(dt) {
+                if (gates.length === 0) {
+                    if (state.introDone && state.time >= state.nextGateAt) {
+                        spawnGate();
+                    }
+                    return;
+                }
+
+                for (let i = gates.length - 1; i >= 0; i -= 1) {
+                    const gate = gates[i];
+                    gate.age += dt;
+                    gate.x += BACK.x * gate.speed * dt;
+                    gate.y += BACK.y * gate.speed * dt;
+                    gate.along = (gate.x - state.headX) * DIR.x
+                        + (gate.y - state.headY) * DIR.y;
+
+                    if (gate.along < -190) {
+                        gates.splice(i, 1);
+                        state.nextGateAt = state.time + rand(2.4, 4.4);
+                    }
+                }
+            }
+
+            function hitGate(gate) {
+                const index = gates.indexOf(gate);
+
+                if (index >= 0) {
+                    gates.splice(index, 1);
+                }
+
+                state.nextGateAt = state.time + rand(2.4, 4.2);
+                addResonance(1);
+                addDust(6 + state.resonance);
+                state.flash = Math.min(1, state.flash + 0.9);
+                state.zoom = Math.min(0.09, state.zoom + 0.055);
+
+                if (!state.reducedMotion) {
+                    state.shake = Math.min(10, state.shake + 6.2);
+                }
+
+                const ringCount = 3 + state.resonance;
+
+                for (let i = 0; i < ringCount; i += 1) {
+                    spawnRing(
+                        1 - i * 0.055,
+                        i * 0.045,
+                        false,
+                        i,
+                        false,
+                        true
+                    );
+                }
+
+                emitBurst(180 + state.resonance * 25, 1.3);
+                pushStatusPop(
+                    `PERFECT ×${state.resonance}`,
+                    22,
+                    "255, 226, 157",
+                    1.2
+                );
+            }
+
+            function evaluatePerfectRelease(holdDuration) {
+                if (holdDuration < 0.22) {
+                    return false;
+                }
+
+                const gate = gateReady();
+
+                if (!gate) {
+                    return false;
+                }
+
+                hitGate(gate);
+                return true;
+            }
+
+            function evaluateRhythmRelease() {
+                if (!state.rhythmMode || beatProximity() > RHYTHM_WINDOW) {
+                    return false;
+                }
+
+                addDust(2);
+                spawnRing(0.52, 0, false, 0, false, true);
+                state.zoom = Math.min(0.09, state.zoom + 0.012);
+                return true;
+            }
+
+            function handleRhythmPress() {
+                if (!state.rhythmMode || beatProximity() > RHYTHM_WINDOW) {
+                    return;
+                }
+
+                addResonance(1);
+                addDust(1);
+                pushStatusPop("SYNC", 13, "178, 255, 255", 0.8);
+            }
+
+            function updateRhythmUi() {
+                rhythmToggle.classList.toggle("is-on", state.rhythmMode);
+                rhythmToggle.setAttribute(
+                    "aria-pressed",
+                    String(state.rhythmMode)
+                );
+                rhythmStateEl.textContent = state.rhythmMode ? "ON" : "OFF";
+            }
+
+            function setRhythmMode(enabled, announce = true) {
+                state.rhythmMode = enabled;
+                updateRhythmUi();
+                saveProgress();
+
+                if (announce) {
+                    showToast(
+                        enabled ? "RHYTHM // ON" : "RHYTHM // OFF",
+                        1600
+                    );
+                }
+            }
+
+            function updateProgression(dt) {
+                if (
+                    state.holding
+                    && state.nextDustAt > 0
+                    && state.time >= state.nextDustAt
+                ) {
+                    addDust(1);
+                    state.nextDustAt = state.time + 0.7;
+                }
+
+                updateGates(dt);
+
+                for (let i = perfectPops.length - 1; i >= 0; i -= 1) {
+                    const pop = perfectPops[i];
+                    pop.age += dt;
+                    pop.y += pop.vy * dt;
+                    pop.vy *= Math.exp(-1.2 * dt);
+
+                    if (pop.age >= pop.life) {
+                        perfectPops.splice(i, 1);
+                    }
+                }
+
+                for (let i = starFlashes.length - 1; i >= 0; i -= 1) {
+                    const flash = starFlashes[i];
+                    flash.age += dt;
+
+                    if (flash.age >= flash.life) {
+                        starFlashes.splice(i, 1);
+                    }
+                }
+
+                for (let i = constellationCelebrations.length - 1; i >= 0; i -= 1) {
+                    const celebration = constellationCelebrations[i];
+                    celebration.age += dt;
+
+                    if (celebration.age >= celebration.life) {
+                        constellationCelebrations.splice(i, 1);
+                    }
                 }
             }
 
@@ -1282,6 +2205,8 @@
                 }
 
                 emitBurst(150 + 55 * power, power);
+                addDust(2);
+                handleRhythmPress();
                 spawnFloatingWord();
                 state.slowActive = false;
                 resetIdleClock();
@@ -1297,11 +2222,15 @@
                 state.holdSource = source;
                 state.holdStartedAt = state.time;
                 state.nextAfterburnAt = state.time + 0.24;
+                state.nextDustAt = state.time + 0.7;
                 state.afterburnIndex = 0;
                 state.chargePercent = -1;
                 state.chargeFull = false;
+                state.chargeLabel = "HOLD";
                 chargeBar.style.strokeDashoffset = "100";
                 chargeLabel.textContent = "HOLD";
+                cursorEl.classList.remove("is-target");
+                cursorEl.classList.remove("is-sync");
 
                 if (source === "pointer") {
                     cursorEl.classList.add("is-charging");
@@ -1310,21 +2239,31 @@
                 triggerPulse(1);
             }
 
-            function stopHold(source = "") {
+            function stopHold(source = "", evaluateRelease = false) {
                 if (!state.holding || (source && state.holdSource !== source)) {
                     return;
                 }
 
+                const holdDuration = state.time - state.holdStartedAt;
                 state.holding = false;
                 state.holdSource = "";
                 state.holdStartedAt = 0;
                 state.nextAfterburnAt = 0;
+                state.nextDustAt = 0;
                 state.afterburnIndex = 0;
+                state.chargeFull = false;
                 clearPageSelection();
                 cursorEl.classList.remove("is-down");
                 cursorEl.classList.remove("is-charging");
                 cursorEl.classList.remove("is-charged");
+                cursorEl.classList.remove("is-target");
+                cursorEl.classList.remove("is-sync");
                 resetIdleClock();
+
+                if (evaluateRelease) {
+                    evaluatePerfectRelease(holdDuration);
+                    evaluateRhythmRelease();
+                }
             }
 
             function triggerAutoPulse() {
@@ -1563,25 +2502,38 @@
                     return;
                 }
 
-                const progress = clamp(
-                    (state.time - state.holdStartedAt) / HOLD_RAMP_SECONDS,
-                    0,
-                    1
-                );
+                const holdDuration = state.time - state.holdStartedAt;
+                const progress = clamp(holdDuration / HOLD_RAMP_SECONDS, 0, 1);
                 const percent = Math.floor(progress * 100);
+                const full = progress >= 0.999;
+                const target = holdDuration >= 0.22 && Boolean(gateReady());
+                const sync = state.rhythmMode
+                    && beatProximity() <= RHYTHM_WINDOW;
+                const nextLabel = target
+                    ? "RELEASE"
+                    : sync
+                        ? "SYNC"
+                        : full
+                            ? "MAX"
+                            : "HOLD";
 
                 if (percent !== state.chargePercent) {
                     state.chargePercent = percent;
                     chargeBar.style.strokeDashoffset = `${100 - percent}`;
                 }
 
-                const full = progress >= 0.999;
+                if (state.chargeLabel !== nextLabel) {
+                    state.chargeLabel = nextLabel;
+                    chargeLabel.textContent = nextLabel;
+                }
 
                 if (full !== state.chargeFull) {
                     state.chargeFull = full;
                     cursorEl.classList.toggle("is-charged", full);
-                    chargeLabel.textContent = full ? "MAX" : "HOLD";
                 }
+
+                cursorEl.classList.toggle("is-target", target);
+                cursorEl.classList.toggle("is-sync", !target && sync);
             }
 
             // ===== 帧更新 =====
@@ -1600,6 +2552,7 @@
 
                 updateSpeed(dt);
                 updateHead(dt);
+                updateProgression(dt);
                 updateAfterburn();
                 updateIdleEvents();
                 updateEmission(dt);
@@ -1915,28 +2868,47 @@
                     const ry = radius * 0.34;
                     const spin = ring.seed + ring.age * ring.spin;
                     const afterburn = ring.afterburn;
+                    const perfect = ring.perfect;
                     const segmentCount = afterburn ? 3 : 4;
+                    const fringeColor = perfect
+                        ? "255, 199, 111"
+                        : "141, 104, 255";
+                    const glowColor = perfect
+                        ? "255, 205, 122"
+                        : "49, 175, 255";
+                    const baseColor = perfect
+                        ? "255, 238, 190"
+                        : "121, 239, 255";
+                    const strongColor = perfect
+                        ? "255, 255, 245"
+                        : "240, 255, 255";
+                    const weakColor = perfect
+                        ? "255, 221, 146"
+                        : "147, 246, 255";
+                    const tickColor = perfect
+                        ? "255, 236, 190"
+                        : "179, 249, 255";
 
                     ctx.save();
                     ctx.translate(ring.x, ring.y);
                     ctx.rotate(ring.rotation);
 
-                    // 轻微紫边，让冲击波摆脱普通发光圆环
-                    ctx.strokeStyle = `rgba(141, 104, 255, ${alpha * 0.24})`;
+                    // 轻微色偏，让完美音爆有单独的暖色记忆点
+                    ctx.strokeStyle = `rgba(${fringeColor}, ${alpha * 0.24})`;
                     ctx.lineWidth = (afterburn ? 2 : 2.6) * scale;
                     ctx.beginPath();
                     ctx.ellipse(0, 0, rx + 1.8, ry + 0.9, 0, 0, TAU);
                     ctx.stroke();
 
                     // 宽而淡的外层辉光
-                    ctx.strokeStyle = `rgba(49, 175, 255, ${alpha * 0.19})`;
+                    ctx.strokeStyle = `rgba(${glowColor}, ${alpha * 0.19})`;
                     ctx.lineWidth = (afterburn ? 8 : 11) * scale;
                     ctx.beginPath();
                     ctx.ellipse(0, 0, rx, ry, 0, 0, TAU);
                     ctx.stroke();
 
                     // 主环的完整底色
-                    ctx.strokeStyle = `rgba(121, 239, 255, ${alpha * 0.35})`;
+                    ctx.strokeStyle = `rgba(${baseColor}, ${alpha * 0.35})`;
                     ctx.lineWidth = 1.3 * scale;
                     ctx.beginPath();
                     ctx.ellipse(0, 0, rx, ry, 0, 0, TAU);
@@ -1949,8 +2921,8 @@
                         const strong = segment === 0;
 
                         ctx.strokeStyle = strong
-                            ? `rgba(240, 255, 255, ${alpha * 0.96})`
-                            : `rgba(147, 246, 255, ${alpha * 0.42})`;
+                            ? `rgba(${strongColor}, ${alpha * 0.96})`
+                            : `rgba(${weakColor}, ${alpha * 0.42})`;
                         ctx.lineWidth = (strong ? 2.2 : 0.9) * scale;
                         ctx.beginPath();
                         ctx.ellipse(0, 0, rx, ry, 0, start, end);
@@ -1966,7 +2938,7 @@
                             const cos = Math.cos(angle);
                             const sin = Math.sin(angle);
 
-                            ctx.strokeStyle = `rgba(179, 249, 255, ${alpha * 0.38})`;
+                            ctx.strokeStyle = `rgba(${tickColor}, ${alpha * 0.38})`;
                             ctx.lineWidth = 0.8 * scale;
                             ctx.beginPath();
                             ctx.moveTo(cos * (rx - 3), sin * (ry - 1.2));
@@ -1988,6 +2960,260 @@
                         }
                     }
 
+                    ctx.restore();
+                }
+
+                ctx.restore();
+            }
+
+            function drawGates() {
+                const gate = gates[0];
+
+                if (!gate) {
+                    return;
+                }
+
+                const scale = viewScale();
+                const hot = Math.abs(gate.along) <= state.gateWindow;
+                const fadeIn = clamp(gate.age / 0.3, 0, 1);
+                const fadeOut = gate.along < 0
+                    ? clamp(1 + gate.along / 190, 0, 1)
+                    : 1;
+                const alpha = fadeIn * fadeOut;
+
+                if (alpha <= 0.01) {
+                    return;
+                }
+
+                const approach = clamp(gate.age / GATE_APPROACH_SECONDS, 0, 1);
+                const radius = gate.radius * (0.9 + approach * 0.12);
+                const rx = radius;
+                const ry = radius * 0.36;
+                const mainColor = hot ? "255, 239, 190" : "178, 246, 255";
+                const glowColor = hot ? "255, 207, 118" : "65, 194, 255";
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.translate(gate.x, gate.y);
+                ctx.rotate(HEADING + Math.PI / 2);
+
+                ctx.strokeStyle = `rgba(${glowColor}, ${alpha * (hot ? 0.2 : 0.1)})`;
+                ctx.lineWidth = (hot ? 14 : 9) * scale;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rx, ry, 0, 0, TAU);
+                ctx.stroke();
+
+                ctx.strokeStyle = `rgba(${mainColor}, ${alpha * (hot ? 0.88 : 0.48)})`;
+                ctx.lineWidth = (hot ? 1.8 : 1.2) * scale;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rx, ry, 0, 0, TAU);
+                ctx.stroke();
+
+                ctx.strokeStyle = `rgba(${mainColor}, ${alpha * (hot ? 0.44 : 0.2)})`;
+                ctx.lineWidth = 0.75 * scale;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rx * 0.68, ry * 0.68, 0, 0, TAU);
+                ctx.stroke();
+
+                for (let tick = 0; tick < 8; tick += 1) {
+                    const angle = tick / 8 * TAU + gate.age * 0.12;
+                    const cos = Math.cos(angle);
+                    const sin = Math.sin(angle);
+
+                    ctx.strokeStyle = `rgba(${mainColor}, ${alpha * 0.38})`;
+                    ctx.lineWidth = 0.7 * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(cos * rx * 0.99, sin * ry * 0.99);
+                    ctx.lineTo(cos * rx * 1.07, sin * ry * 1.07);
+                    ctx.stroke();
+                }
+
+                const diamond = 4.5 * scale;
+                ctx.strokeStyle = `rgba(${mainColor}, ${alpha * 0.9})`;
+                ctx.lineWidth = 1 * scale;
+                ctx.beginPath();
+                ctx.moveTo(-diamond, 0);
+                ctx.lineTo(0, -diamond);
+                ctx.lineTo(diamond, 0);
+                ctx.lineTo(0, diamond);
+                ctx.closePath();
+                ctx.stroke();
+
+                if (hot) {
+                    const pulse = 0.5 + 0.5 * Math.sin(state.time * 14);
+                    ctx.strokeStyle = `rgba(255, 247, 220, ${alpha * (0.28 + pulse * 0.3)})`;
+                    ctx.lineWidth = 1.1 * scale;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, rx * (1.04 + pulse * 0.03), ry * (1.04 + pulse * 0.03), 0, 0, TAU);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+
+            function drawRhythmPulse() {
+                if (!state.rhythmMode) {
+                    return;
+                }
+
+                const phase = (state.time % RHYTHM_INTERVAL) / RHYTHM_INTERVAL;
+                const alpha = Math.pow(1 - phase, 2) * 0.2;
+                const radius = 26 + phase * 132;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.translate(state.headX, state.headY);
+                ctx.strokeStyle = `rgba(198, 241, 255, ${alpha})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, TAU);
+                ctx.stroke();
+                ctx.strokeStyle = `rgba(118, 247, 255, ${alpha * 0.5})`;
+                ctx.lineWidth = 0.6;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius * 0.9, 0, TAU);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function drawConstellationPattern(pattern, litCount, alpha, offset) {
+                const scale = viewScale();
+                const points = [];
+
+                for (let index = 0; index < litCount; index += 1) {
+                    const point = pattern[index];
+
+                    if (!point) {
+                        continue;
+                    }
+
+                    points.push({
+                        x: point[0] * state.width,
+                        y: point[1] * state.height
+                    });
+                }
+
+                if (points.length === 0) {
+                    return;
+                }
+
+                if (points.length > 1) {
+                    ctx.strokeStyle = `rgba(146, 240, 255, ${alpha * 0.27})`;
+                    ctx.lineWidth = 0.8 * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+
+                    for (let index = 1; index < points.length; index += 1) {
+                        ctx.lineTo(points[index].x, points[index].y);
+                    }
+
+                    ctx.stroke();
+                }
+
+                for (let index = 0; index < points.length; index += 1) {
+                    const point = points[index];
+                    const twinkle = 0.76
+                        + 0.24 * Math.sin(state.time * 1.4 + index + offset);
+
+                    ctx.shadowColor = "rgba(140, 240, 255, 0.72)";
+                    ctx.shadowBlur = 7 * scale;
+                    ctx.fillStyle = `rgba(228, 254, 255, ${alpha * twinkle})`;
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 2.1 * scale, 0, TAU);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    ctx.strokeStyle = `rgba(150, 240, 255, ${alpha * 0.58})`;
+                    ctx.lineWidth = 0.7 * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(point.x - 5.5 * scale, point.y);
+                    ctx.lineTo(point.x + 5.5 * scale, point.y);
+                    ctx.moveTo(point.x, point.y - 5.5 * scale);
+                    ctx.lineTo(point.x, point.y + 5.5 * scale);
+                    ctx.stroke();
+                }
+            }
+
+            function drawConstellations() {
+                const currentPattern = CONSTELLATION_PATTERNS[currentPatternIndex()];
+                const lit = currentStars();
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                if (lit > 0) {
+                    drawConstellationPattern(currentPattern, lit, 0.66, 0);
+                }
+
+                for (const celebration of constellationCelebrations) {
+                    const progress = clamp(
+                        celebration.age / celebration.life,
+                        0,
+                        1
+                    );
+                    const pattern = CONSTELLATION_PATTERNS[
+                        celebration.patternIndex
+                    ];
+                    drawConstellationPattern(
+                        pattern,
+                        pattern.length,
+                        Math.pow(1 - progress, 1.25) * 0.78,
+                        1
+                    );
+                }
+
+                for (const flash of starFlashes) {
+                    const progress = clamp(flash.age / flash.life, 0, 1);
+                    const alpha = Math.pow(1 - progress, 1.4);
+
+                    ctx.strokeStyle = `rgba(210, 253, 255, ${alpha * 0.72})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.beginPath();
+                    ctx.arc(
+                        flash.x,
+                        flash.y,
+                        4 + progress * 21,
+                        0,
+                        TAU
+                    );
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+
+            function drawPerfectPops() {
+                if (perfectPops.length === 0) {
+                    return;
+                }
+
+                ctx.save();
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                for (const pop of perfectPops) {
+                    const progress = clamp(pop.age / pop.life, 0, 1);
+                    const reveal = Math.min(1, progress * 6);
+                    const alpha = reveal * Math.pow(1 - progress, 1.3);
+
+                    if (alpha <= 0.01) {
+                        continue;
+                    }
+
+                    ctx.save();
+                    ctx.translate(pop.x, pop.y);
+                    ctx.globalAlpha = alpha;
+                    ctx.font = `600 ${(pop.size * (0.92 + progress * 0.2)).toFixed(1)}px "Bahnschrift", "DIN Alternate", "Arial Narrow", sans-serif`;
+                    ctx.shadowColor = `rgba(${pop.color}, 0.82)`;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = `rgba(${pop.color}, 0.98)`;
+                    ctx.fillText(pop.text, 0, 0);
+                    ctx.shadowBlur = 0;
+
+                    const width = ctx.measureText(pop.text).width;
+                    ctx.globalAlpha = alpha * 0.35;
+                    ctx.fillStyle = `rgba(${pop.color}, 0.8)`;
+                    ctx.fillRect(-width / 2, pop.size * 0.58, width, 1);
                     ctx.restore();
                 }
 
@@ -2140,13 +3366,19 @@
                     ctx.lineWidth = 2.2;
                     ctx.strokeStyle = "rgba(2, 7, 15, 0.7)";
                     ctx.strokeText(word.text, 0, 0);
-                    ctx.shadowColor = "rgba(78, 232, 255, 0.76)";
-                    ctx.shadowBlur = 13;
-                    ctx.fillStyle = "rgba(236, 255, 255, 0.98)";
+                    ctx.shadowColor = word.warm
+                        ? "rgba(255, 211, 128, 0.82)"
+                        : "rgba(78, 232, 255, 0.76)";
+                    ctx.shadowBlur = word.glow;
+                    ctx.fillStyle = word.warm
+                        ? "rgba(255, 249, 224, 0.99)"
+                        : "rgba(236, 255, 255, 0.98)";
                     ctx.fillText(word.text, 0, 0);
                     ctx.shadowBlur = 0;
                     ctx.globalAlpha = alpha * 0.9;
-                    ctx.fillStyle = "rgba(118, 247, 255, 1)";
+                    ctx.fillStyle = word.warm
+                        ? "rgba(255, 220, 151, 1)"
+                        : "rgba(118, 247, 255, 1)";
                     ctx.fillRect(
                         -12,
                         -fontSize * 0.38,
@@ -2188,12 +3420,16 @@
                 drawDatum();
                 drawStars();
                 drawDust();
+                drawRhythmPulse();
+                drawConstellations();
                 drawTrail();
                 drawParticles();
                 drawRings();
+                drawGates();
                 drawHead();
                 drawFlash();
                 drawFloatingWords();
+                drawPerfectPops();
             }
 
             // ===== 主循环 =====
@@ -2211,6 +3447,22 @@
 
             // ===== 事件绑定 =====
             window.addEventListener("resize", resize);
+
+            hintTools.addEventListener("pointerdown", (event) => {
+                event.stopPropagation();
+            });
+
+            rhythmToggle.addEventListener("click", () => {
+                setRhythmMode(!state.rhythmMode);
+            });
+
+            paletteSwitcher.addEventListener("click", (event) => {
+                const button = event.target.closest(".swatch");
+
+                if (button) {
+                    setPalette(button.dataset.palette);
+                }
+            });
 
             function moveCursor(clientX, clientY) {
                 cursorEl.style.transform = `translate3d(${clientX}px, ${clientY}px, 0)`;
@@ -2239,7 +3491,7 @@
             });
 
             window.addEventListener("pointerup", () => {
-                stopHold("pointer");
+                stopHold("pointer", true);
                 cursorEl.classList.remove("is-down");
             });
 
@@ -2274,6 +3526,25 @@
             });
 
             window.addEventListener("keydown", (event) => {
+                if (
+                    event.target instanceof HTMLElement
+                    && event.target.closest("button")
+                ) {
+                    return;
+                }
+
+                if (event.code === "KeyR") {
+                    event.preventDefault();
+                    setRhythmMode(!state.rhythmMode);
+                    return;
+                }
+
+                if (event.code === "KeyC") {
+                    event.preventDefault();
+                    cyclePalette();
+                    return;
+                }
+
                 if (event.code !== "Space" || event.repeat) {
                     return;
                 }
@@ -2283,12 +3554,19 @@
             });
 
             window.addEventListener("keyup", (event) => {
+                if (
+                    event.target instanceof HTMLElement
+                    && event.target.closest("button")
+                ) {
+                    return;
+                }
+
                 if (event.code !== "Space") {
                     return;
                 }
 
                 event.preventDefault();
-                stopHold("keyboard");
+                stopHold("keyboard", true);
             });
 
             window.addEventListener("blur", () => {
@@ -2301,6 +3579,7 @@
             document.addEventListener("visibilitychange", () => {
                 if (document.hidden) {
                     stopHold();
+                    saveProgress();
                 }
 
                 state.paused = document.hidden;
@@ -2311,6 +3590,8 @@
                 }
             });
 
+            window.addEventListener("pagehide", saveProgress);
+
             motionQuery.addEventListener("change", (event) => {
                 state.reducedMotion = event.matches;
 
@@ -2320,6 +3601,10 @@
             });
 
             // ===== 启动 =====
+            loadProgress();
+            setPalette(state.activePalette, false);
+            updateRhythmUi();
+            updateProgressHud();
             resize();
             state.lastTime = performance.now();
             requestAnimationFrame(frame);

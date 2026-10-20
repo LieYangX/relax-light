@@ -3,6 +3,7 @@
 
 # 临时预览或调试脚本
 /.preview-*
+/.test-*
 *.log
 npm-debug.log*
 
