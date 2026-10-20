@@ -119,6 +119,7 @@
             height: 100%;
             touch-action: none;
             -webkit-user-drag: none;
+            outline: none;
         }
 
         .palette-tint {
@@ -438,7 +439,8 @@
             pointer-events: auto;
         }
 
-        .rhythm-toggle {
+        .rhythm-toggle,
+        .guide-toggle {
             display: flex;
             align-items: center;
             gap: 6px;
@@ -460,7 +462,9 @@
         }
 
         .rhythm-toggle:hover,
-        .rhythm-toggle:focus-visible {
+        .rhythm-toggle:focus-visible,
+        .guide-toggle:hover,
+        .guide-toggle:focus-visible {
             border-color: rgba(125, 235, 255, 0.55);
             color: var(--muted);
             outline: none;
@@ -566,6 +570,251 @@
         .tickline i:nth-child(3n) {
             height: 7px;
             background: rgba(120, 230, 255, 0.4);
+        }
+
+        body.guide-open {
+            cursor: auto;
+            touch-action: pan-y;
+        }
+
+        body.guide-open .cursor {
+            display: none;
+        }
+
+        .guide-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 35;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(16px, 4vw, 36px);
+            background:
+                radial-gradient(ellipse at 50% 42%, rgba(10, 32, 46, 0.55), transparent 62%),
+                rgba(2, 6, 12, 0.8);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            touch-action: pan-y;
+            overscroll-behavior: contain;
+            transition: opacity 220ms ease, visibility 0s linear 220ms;
+        }
+
+        .guide-overlay.is-open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity 220ms ease, visibility 0s;
+        }
+
+        .guide-panel {
+            position: relative;
+            width: min(620px, 100%);
+            max-height: min(84vh, 760px);
+            padding: clamp(20px, 3.4vw, 32px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            border: 1px solid rgba(125, 235, 255, 0.24);
+            background: linear-gradient(160deg, rgba(5, 16, 26, 0.98), rgba(2, 8, 14, 0.99));
+            box-shadow: 0 28px 90px rgba(0, 0, 0, 0.56), inset 0 0 70px rgba(50, 170, 220, 0.035);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(118, 247, 255, 0.35) transparent;
+            touch-action: pan-y;
+        }
+
+        .guide-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .guide-panel::-webkit-scrollbar-thumb {
+            background: rgba(118, 247, 255, 0.28);
+        }
+
+        .guide-panel::before,
+        .guide-panel::after {
+            content: "";
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-color: rgba(125, 235, 255, 0.42);
+            border-style: solid;
+            pointer-events: none;
+        }
+
+        .guide-panel::before {
+            top: 8px;
+            left: 8px;
+            border-width: 1px 0 0 1px;
+        }
+
+        .guide-panel::after {
+            right: 8px;
+            bottom: 8px;
+            border-width: 0 1px 1px 0;
+        }
+
+        .guide-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(125, 235, 255, 0.12);
+        }
+
+        .guide-kicker {
+            color: var(--quiet);
+            font-size: 8px;
+            line-height: 1.2;
+            letter-spacing: 0.22em;
+            white-space: nowrap;
+        }
+
+        .guide-close {
+            min-height: 26px;
+            padding: 4px 8px;
+            border: 1px solid rgba(125, 235, 255, 0.22);
+            background: transparent;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 8px;
+            line-height: 1;
+            letter-spacing: 0.14em;
+            cursor: pointer;
+            transition: color 180ms ease, border-color 180ms ease;
+        }
+
+        .guide-close:hover,
+        .guide-close:focus-visible {
+            color: var(--core);
+            border-color: rgba(125, 235, 255, 0.6);
+            outline: none;
+        }
+
+        .guide-body {
+            padding-top: 20px;
+        }
+
+        .guide-title {
+            margin: 0;
+            color: var(--core);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: clamp(26px, 4vw, 36px);
+            font-weight: 500;
+            line-height: 1.15;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 22px rgba(118, 247, 255, 0.24);
+        }
+
+        .guide-lead {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 12px;
+            line-height: 1.8;
+            letter-spacing: 0.06em;
+        }
+
+        .guide-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 22px 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .guide-steps li {
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            gap: 12px;
+            padding-top: 13px;
+            border-top: 1px solid rgba(125, 235, 255, 0.08);
+        }
+
+        .guide-steps li:first-child {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .guide-number {
+            color: var(--ion);
+            font-family: "Bahnschrift", "DIN Alternate", "Arial Narrow", sans-serif;
+            font-size: 10px;
+            line-height: 1.6;
+            letter-spacing: 0.12em;
+        }
+
+        .guide-steps h3 {
+            margin: 0 0 5px;
+            color: var(--core);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.3;
+            letter-spacing: 0.08em;
+        }
+
+        .guide-steps p {
+            margin: 0;
+            color: var(--muted);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 11px;
+            line-height: 1.75;
+            letter-spacing: 0.03em;
+        }
+
+        .guide-steps strong {
+            color: var(--core);
+            font-weight: 500;
+        }
+
+        .guide-note {
+            margin: 18px 0 0;
+            padding-top: 12px;
+            border-top: 1px solid rgba(125, 235, 255, 0.1);
+            color: var(--quiet);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 9px;
+            line-height: 1.7;
+            letter-spacing: 0.08em;
+        }
+
+        .guide-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 22px;
+        }
+
+        .guide-start {
+            min-height: 38px;
+            padding: 10px 18px;
+            border: 1px solid rgba(125, 235, 255, 0.55);
+            background: rgba(19, 52, 68, 0.45);
+            color: var(--core);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 10px;
+            line-height: 1;
+            letter-spacing: 0.16em;
+            cursor: pointer;
+            transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .guide-start:hover,
+        .guide-start:focus-visible {
+            border-color: rgba(188, 252, 255, 0.9);
+            background: rgba(28, 78, 94, 0.58);
+            box-shadow: 0 0 18px rgba(86, 238, 255, 0.12);
+            outline: none;
+        }
+
+        .guide-keys {
+            color: var(--quiet);
+            font-size: 8px;
+            letter-spacing: 0.12em;
+            white-space: nowrap;
         }
 
         .unlock-toast {
@@ -891,7 +1140,8 @@
                 gap: 7px;
             }
 
-            .rhythm-toggle {
+            .rhythm-toggle,
+            .guide-toggle {
                 min-height: 30px;
                 padding: 6px 8px;
                 font-size: 7px;
@@ -900,6 +1150,61 @@
             .swatch {
                 width: 18px;
                 height: 18px;
+            }
+
+            .guide-overlay {
+                align-items: flex-end;
+                padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+            }
+
+            .guide-panel {
+                width: 100%;
+                max-height: min(88vh, 780px);
+                padding: 18px 16px 20px;
+            }
+
+            .guide-close {
+                min-height: 32px;
+                padding: 6px 9px;
+            }
+
+            .guide-title {
+                font-size: 24px;
+            }
+
+            .guide-lead {
+                font-size: 11px;
+            }
+
+            .guide-steps {
+                gap: 12px;
+                margin-top: 18px;
+            }
+
+            .guide-steps li {
+                grid-template-columns: 26px 1fr;
+                gap: 9px;
+                padding-top: 11px;
+            }
+
+            .guide-steps p {
+                font-size: 10.5px;
+            }
+
+            .guide-foot {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .guide-start {
+                width: 100%;
+                min-height: 44px;
+                font-size: 11px;
+            }
+
+            .guide-keys {
+                text-align: center;
             }
 
             .frame i {
@@ -920,6 +1225,33 @@
             .mode-line {
                 margin-top: 7px;
             }
+
+            .guide-overlay {
+                align-items: center;
+                padding: 8px;
+            }
+
+            .guide-panel {
+                max-height: 94vh;
+                padding: 14px;
+            }
+
+            .guide-body {
+                padding-top: 14px;
+            }
+
+            .guide-title {
+                font-size: 22px;
+            }
+
+            .guide-steps {
+                gap: 10px;
+                margin-top: 14px;
+            }
+
+            .guide-note {
+                margin-top: 12px;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -938,14 +1270,17 @@
             .charge-ring,
             .charge-label,
             .palette-tint,
-            .unlock-toast {
+            .unlock-toast,
+            .guide-overlay,
+            .guide-start,
+            .guide-close {
                 transition: none;
             }
         }
     </style>
 </head>
 <body data-palette="cyan">
-    <canvas id="scene" role="img" aria-label="一枚光点沿对角线持续向左上方飞行，身后拖着发光轨迹，前方有光环和星图等待穿越与点亮。"></canvas>
+    <canvas id="scene" role="img" tabindex="-1" aria-label="一枚光点沿对角线持续向左上方飞行，身后拖着发光轨迹，前方有光环和星图等待穿越与点亮。"></canvas>
     <div class="palette-tint" aria-hidden="true"></div>
     <div class="vignette" aria-hidden="true"></div>
     <div class="frame" aria-hidden="true">
@@ -990,6 +1325,7 @@
                 </div>
                 <div class="touch-hint touch-only">轻触脉冲 · 长按蓄力，光环重合时松开</div>
                 <div class="hint-tools" id="hint-tools">
+                    <button class="guide-toggle" id="guide-toggle" type="button">玩法</button>
                     <button class="rhythm-toggle" id="rhythm-toggle" type="button" aria-pressed="false">
                         <span class="tool-dot" aria-hidden="true"></span>
                         <span>RHYTHM</span>
@@ -1010,6 +1346,61 @@
             </div>
             <div class="tickline">
                 <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="guide-overlay" id="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guide-title" aria-hidden="true">
+        <div class="guide-panel">
+            <div class="guide-head">
+                <span class="guide-kicker">FIELD MANUAL // 01</span>
+                <button class="guide-close" id="guide-close" type="button">关闭</button>
+            </div>
+            <div class="guide-body">
+                <h2 class="guide-title" id="guide-title">玩法说明</h2>
+                <p class="guide-lead">光会一直向前。你只需要决定什么时候加速。</p>
+                <ol class="guide-steps">
+                    <li>
+                        <span class="guide-number">01</span>
+                        <div>
+                            <h3>点击 / 轻触</h3>
+                            <p>脉冲加速，收集星尘，并从光点放出一句短句。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-number">02</span>
+                        <div>
+                            <h3>长按蓄力</h3>
+                            <p>进入持续过载，速度爬升。光标周围会出现蓄力环。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-number">03</span>
+                        <div>
+                            <h3>光环重合时松开</h3>
+                            <p>迎面光环靠近光点时松手，触发 <strong>PERFECT</strong>。连续完美最高 <strong>×5</strong>，音爆更多、短句更亮。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-number">04</span>
+                        <div>
+                            <h3>点亮星座</h3>
+                            <p>每 5 点星尘点亮一颗星，30 点完成星座，可解锁新的配色和短句组。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-number">05</span>
+                        <div>
+                            <h3>可选玩法</h3>
+                            <p><strong>RHYTHM</strong> 开启节奏模式，点击和松开都尽量踩在拍点上。底部色点或 <strong>C</strong> 键切换已解锁配色。</p>
+                        </div>
+                    </li>
+                </ol>
+                <p class="guide-note">错过 PERFECT 不会失败，只会少一次加速。随时点左下角「玩法」重看。</p>
+            </div>
+            <div class="guide-foot">
+                <button class="guide-start" id="guide-start" type="button">开始探索</button>
+                <span class="guide-keys">R 节奏 · C 配色</span>
             </div>
         </div>
     </div>
@@ -1091,6 +1482,10 @@
             const paletteSwitcher = document.getElementById("palette-switcher");
             const hintTools = document.getElementById("hint-tools");
             const unlockToast = document.getElementById("unlock-toast");
+            const guideOverlay = document.getElementById("guide-overlay");
+            const guideToggle = document.getElementById("guide-toggle");
+            const guideClose = document.getElementById("guide-close");
+            const guideStart = document.getElementById("guide-start");
             const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
             // ===== 场景参数 =====
@@ -1171,7 +1566,9 @@
                 activePalette: "cyan",
                 unlockedPalettes: ["cyan"],
                 rhythmMode: false,
-                tutorialSeen: false
+                tutorialSeen: false,
+                guideSeen: false,
+                guideOpen: false
             };
 
             // 根据视口计算视觉尺寸，避免小屏上的光带过粗
@@ -1745,6 +2142,7 @@
                     : "cyan";
                 state.rhythmMode = data.rhythmMode === true;
                 state.tutorialSeen = data.tutorialSeen === true;
+                state.guideSeen = data.guideSeen === true;
                 state.bestResonance = Number.isFinite(data.bestResonance)
                     ? clamp(Math.floor(data.bestResonance), 0, MAX_RESONANCE)
                     : 0;
@@ -1758,6 +2156,7 @@
                         activePalette: state.activePalette,
                         rhythmMode: state.rhythmMode,
                         tutorialSeen: state.tutorialSeen,
+                        guideSeen: state.guideSeen,
                         bestResonance: state.bestResonance
                     }));
                 } catch {
@@ -2015,7 +2414,7 @@
                     hit: false
                 });
 
-                if (!state.tutorialSeen) {
+                if (!state.tutorialSeen && !state.guideOpen) {
                     state.tutorialSeen = true;
                     showToast("光环重合时松手 · PERFECT", 3000);
                     saveProgress();
@@ -2140,6 +2539,37 @@
                         1600
                     );
                 }
+            }
+
+            function openGuide() {
+                if (state.guideOpen) {
+                    return;
+                }
+
+                stopHold("", false);
+                state.guideOpen = true;
+                guideOverlay.classList.add("is-open");
+                guideOverlay.setAttribute("aria-hidden", "false");
+                document.body.classList.add("guide-open");
+                guideStart.focus({ preventScroll: true });
+            }
+
+            function closeGuide() {
+                if (!state.guideOpen) {
+                    return;
+                }
+
+                state.guideOpen = false;
+                guideOverlay.classList.remove("is-open");
+                guideOverlay.setAttribute("aria-hidden", "true");
+                document.body.classList.remove("guide-open");
+
+                if (!state.guideSeen) {
+                    state.guideSeen = true;
+                    saveProgress();
+                }
+
+                canvas.focus({ preventScroll: true });
             }
 
             function updateProgression(dt) {
@@ -3452,6 +3882,14 @@
                 event.stopPropagation();
             });
 
+            guideToggle.addEventListener("click", openGuide);
+            guideClose.addEventListener("click", closeGuide);
+            guideStart.addEventListener("click", closeGuide);
+
+            guideOverlay.addEventListener("pointerdown", (event) => {
+                event.stopPropagation();
+            });
+
             rhythmToggle.addEventListener("click", () => {
                 setRhythmMode(!state.rhythmMode);
             });
@@ -3477,6 +3915,10 @@
             }, { passive: true });
 
             window.addEventListener("pointerdown", (event) => {
+                if (state.guideOpen) {
+                    return;
+                }
+
                 if (event.button !== 0 && event.button !== 2) {
                     return;
                 }
@@ -3526,6 +3968,45 @@
             });
 
             window.addEventListener("keydown", (event) => {
+                if (!state.guideOpen) {
+                    return;
+                }
+
+                if (event.code === "Escape") {
+                    event.preventDefault();
+                    closeGuide();
+                    return;
+                }
+
+                if (event.code !== "Tab") {
+                    return;
+                }
+
+                const focusables = [guideClose, guideStart];
+
+                if (!guideOverlay.contains(document.activeElement)) {
+                    event.preventDefault();
+                    focusables[event.shiftKey ? focusables.length - 1 : 0].focus();
+                    return;
+                }
+
+                if (event.shiftKey && document.activeElement === focusables[0]) {
+                    event.preventDefault();
+                    focusables[focusables.length - 1].focus();
+                } else if (
+                    !event.shiftKey
+                    && document.activeElement === focusables[focusables.length - 1]
+                ) {
+                    event.preventDefault();
+                    focusables[0].focus();
+                }
+            });
+
+            window.addEventListener("keydown", (event) => {
+                if (state.guideOpen) {
+                    return;
+                }
+
                 if (
                     event.target instanceof HTMLElement
                     && event.target.closest("button")
@@ -3554,6 +4035,10 @@
             });
 
             window.addEventListener("keyup", (event) => {
+                if (state.guideOpen) {
+                    return;
+                }
+
                 if (
                     event.target instanceof HTMLElement
                     && event.target.closest("button")
@@ -3608,6 +4093,14 @@
             resize();
             state.lastTime = performance.now();
             requestAnimationFrame(frame);
+
+            if (!state.guideSeen) {
+                window.setTimeout(() => {
+                    if (!document.hidden && !state.guideOpen) {
+                        openGuide();
+                    }
+                }, 900);
+            }
         })();
     </script>
 </body>
