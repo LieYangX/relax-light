@@ -1,0 +1,14 @@
+index.html
+  h_1d1a3d05761997 2425
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "243d59edb32612270b1e16126d99cc3b0e61c12c",
+  "prompts": {},
+  "humans": {
+    "h_1d1a3d05761997": {
+      "author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
