@@ -1288,26 +1288,54 @@
             line-height: 1.2;
         }
 
+        .result-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .result-continue,
         .result-restart {
             min-height: 44px;
-            margin-top: 30px;
-            padding: 12px 28px;
-            border: 1px solid var(--result-accent);
-            background: rgba(10, 30, 40, 0.52);
-            color: var(--core);
+            padding: 12px 24px;
             font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
             font-size: 11px;
             line-height: 1;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.14em;
             cursor: pointer;
-            transition: background 180ms ease, box-shadow 180ms ease;
+            transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
         }
 
+        .result-continue {
+            border: 1px solid var(--result-accent);
+            background: rgba(10, 30, 40, 0.52);
+            color: var(--core);
+        }
+
+        .result-restart {
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: transparent;
+            color: var(--muted);
+        }
+
+        .result-continue:hover,
+        .result-continue:focus-visible,
         .result-restart:hover,
         .result-restart:focus-visible {
             background: rgba(28, 62, 70, 0.66);
             box-shadow: 0 0 24px var(--result-soft);
             outline: none;
+        }
+
+        .result-continue:hover,
+        .result-continue:focus-visible {
+            border-color: var(--result-accent);
+        }
+
+        .result-restart:hover,
+        .result-restart:focus-visible {
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         .result-note {
@@ -1836,9 +1864,17 @@
                 font-size: 16px;
             }
 
+            .result-actions {
+                width: min(340px, 100%);
+                margin: 30px auto 0;
+            }
+
+            .result-continue,
             .result-restart {
-                width: min(320px, 100%);
+                flex: 1;
+                min-width: 0;
                 min-height: 46px;
+                padding: 12px 10px;
             }
 
             .result-note {
@@ -1905,7 +1941,7 @@
                 margin-top: 18px;
             }
 
-            .result-restart {
+            .result-actions {
                 margin-top: 18px;
             }
         }
@@ -1943,6 +1979,7 @@
             }
 
             .result-overlay,
+            .result-continue,
             .result-restart {
                 transition: none;
             }
@@ -2053,7 +2090,7 @@
             <div class="guide-body">
                 <h2 class="guide-title" id="guide-title">玩法说明</h2>
                 <p class="guide-lead">光会一直向前。你只需要决定什么时候加速。</p>
-                <p class="guide-goal">本轮目标：点亮 3 个星座。每轮从零开始，完成后进入结算。</p>
+                <p class="guide-goal">本轮目标：点亮 3 个星座。每轮从零开始，完成后进入结算；结算页可以关闭并继续游玩。</p>
                 <ol class="guide-steps">
                     <li>
                         <span class="guide-number">01</span>
@@ -2080,7 +2117,7 @@
                         <span class="guide-number">04</span>
                         <div>
                             <h3>点亮星座</h3>
-                            <p>每 5 点星尘点亮一颗星，30 点完成一个星座。前三个星座依次解锁冷白、极光紫、深空金和对应短句组；完成第三个星座即本轮通关，进入结算。</p>
+                            <p>每 5 点星尘点亮一颗星，30 点完成一个星座。前三个星座依次解锁冷白、极光紫、深空金和对应短句组；完成第三个星座即本轮通关，进入结算。结算页可以关闭后继续游玩，或选择再次出发。</p>
                         </div>
                     </li>
                     <li>
@@ -2135,8 +2172,11 @@
                 <div><span>最高共鸣</span><b data-result-resonance>×0</b></div>
                 <div><span>踩拍</span><b data-result-sync>0</b></div>
             </div>
-            <button class="result-restart" id="result-restart" type="button">再次出发</button>
-            <p class="result-note">每一次出发，都是新的星图。</p>
+            <div class="result-actions">
+                <button class="result-continue" id="result-continue" type="button">继续游玩</button>
+                <button class="result-restart" id="result-restart" type="button">再次出发</button>
+            </div>
+            <p class="result-note">继续游玩会保留本轮星图；再次出发会重新开始。</p>
         </div>
     </div>
 
@@ -2244,6 +2284,7 @@
             const resultPerfect = document.querySelector("[data-result-perfect]");
             const resultResonance = document.querySelector("[data-result-resonance]");
             const resultSync = document.querySelector("[data-result-sync]");
+            const resultContinue = document.getElementById("result-continue");
             const resultRestart = document.getElementById("result-restart");
             const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -2355,7 +2396,8 @@
                 perfectCount: 0,
                 runStartedAt: 0,
                 runComplete: false,
-                resultOpen: false
+                resultOpen: false,
+                goalReached: false
             };
 
             // 根据视口计算视觉尺寸，避免小屏上的光带过粗
@@ -3159,7 +3201,12 @@
                     }
 
                     if (!unlocked) {
-                        showToast(`星图完成 // 累计 ${afterDone} 次`, 2400);
+                        showToast(
+                            state.goalReached
+                                ? "自由星图 // 完成"
+                                : "星图完成",
+                            2200
+                        );
                     }
                 } else if (afterStars > beforeStars) {
                     const pattern = CONSTELLATION_PATTERNS[currentPatternIndex()];
@@ -3183,7 +3230,10 @@
                 updateProgressHud();
                 saveProgress();
 
-                if (state.constellationsDone >= RUN_GOAL_CONSTELLATIONS) {
+                if (
+                    !state.goalReached
+                    && state.constellationsDone >= RUN_GOAL_CONSTELLATIONS
+                ) {
                     completeRun();
                 }
             }
@@ -3229,6 +3279,7 @@
                 }
 
                 state.runComplete = true;
+                state.goalReached = true;
                 stopHold("", false);
                 gates.length = 0;
                 words.length = 0;
@@ -3294,7 +3345,22 @@
                 resultOverlay.setAttribute("aria-hidden", "false");
                 state.resultOpen = true;
                 document.body.classList.add("result-open");
-                resultRestart.focus({ preventScroll: true });
+                resultContinue.focus({ preventScroll: true });
+            }
+
+            function closeRunResult() {
+                if (!state.resultOpen) {
+                    return;
+                }
+
+                state.resultOpen = false;
+                state.runComplete = false;
+                resultOverlay.classList.remove("is-open");
+                resultOverlay.setAttribute("aria-hidden", "true");
+                document.body.classList.remove("result-open");
+                state.nextGateAt = state.time + 2.4;
+                canvas.focus({ preventScroll: true });
+                showToast("自由星图 · 继续游玩", 1800);
             }
 
             // ===== 光环、完美释放与节奏 =====
@@ -5018,6 +5084,8 @@
                 event.stopPropagation();
             });
 
+            resultContinue.addEventListener("click", closeRunResult);
+
             resultRestart.addEventListener("click", () => {
                 window.location.reload();
             });
@@ -5104,9 +5172,36 @@
                     return;
                 }
 
-                if (event.code === "Tab") {
+                if (event.code === "Escape") {
                     event.preventDefault();
-                    resultRestart.focus();
+                    closeRunResult();
+                    return;
+                }
+
+                if (event.code !== "Tab") {
+                    return;
+                }
+
+                const focusables = [resultContinue, resultRestart];
+
+                if (!resultOverlay.contains(document.activeElement)) {
+                    event.preventDefault();
+                    focusables[event.shiftKey ? focusables.length - 1 : 0].focus();
+                    return;
+                }
+
+                if (
+                    event.shiftKey
+                    && document.activeElement === focusables[0]
+                ) {
+                    event.preventDefault();
+                    focusables[focusables.length - 1].focus();
+                } else if (
+                    !event.shiftKey
+                    && document.activeElement === focusables[focusables.length - 1]
+                ) {
+                    event.preventDefault();
+                    focusables[0].focus();
                 }
             });
 
