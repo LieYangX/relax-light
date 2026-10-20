@@ -440,7 +440,8 @@
         }
 
         .rhythm-toggle,
-        .guide-toggle {
+        .guide-toggle,
+        .music-toggle {
             display: flex;
             align-items: center;
             gap: 6px;
@@ -464,10 +465,27 @@
         .rhythm-toggle:hover,
         .rhythm-toggle:focus-visible,
         .guide-toggle:hover,
-        .guide-toggle:focus-visible {
+        .guide-toggle:focus-visible,
+        .music-toggle:hover,
+        .music-toggle:focus-visible {
             border-color: rgba(125, 235, 255, 0.55);
             color: var(--muted);
             outline: none;
+        }
+
+        .music-toggle b {
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .music-toggle.is-on {
+            border-color: rgba(125, 235, 255, 0.55);
+            background: rgba(22, 55, 70, 0.46);
+            color: var(--core);
+        }
+
+        .music-toggle.is-on b {
+            color: var(--ion);
         }
 
         .rhythm-toggle.is-on {
@@ -817,6 +835,10 @@
             white-space: nowrap;
         }
 
+        #bg-music {
+            display: none;
+        }
+
         .unlock-toast {
             position: fixed;
             left: 50%;
@@ -1141,7 +1163,8 @@
             }
 
             .rhythm-toggle,
-            .guide-toggle {
+            .guide-toggle,
+            .music-toggle {
                 min-height: 30px;
                 padding: 6px 8px;
                 font-size: 7px;
@@ -1326,6 +1349,10 @@
                 <div class="touch-hint touch-only">轻触脉冲 · 长按蓄力，光环重合时松开</div>
                 <div class="hint-tools" id="hint-tools">
                     <button class="guide-toggle" id="guide-toggle" type="button">玩法</button>
+                    <button class="music-toggle" id="music-toggle" type="button" aria-pressed="true">
+                        <span>音乐</span>
+                        <b data-music-state>ON</b>
+                    </button>
                     <button class="rhythm-toggle" id="rhythm-toggle" type="button" aria-pressed="false">
                         <span class="tool-dot" aria-hidden="true"></span>
                         <span>RHYTHM</span>
@@ -1396,7 +1423,7 @@
                         </div>
                     </li>
                 </ol>
-                <p class="guide-note">错过 PERFECT 不会失败，只会少一次加速。随时点左下角「玩法」重看。</p>
+                <p class="guide-note">错过 PERFECT 不会失败，只会少一次加速。音乐会在首次交互后播放，可在左下角关闭；随时点「玩法」重看说明。</p>
             </div>
             <div class="guide-foot">
                 <button class="guide-start" id="guide-start" type="button">开始探索</button>
@@ -1404,6 +1431,8 @@
             </div>
         </div>
     </div>
+
+    <audio id="bg-music" src="assets/4078965796.mp3" loop preload="auto" aria-hidden="true"></audio>
 
     <div class="unlock-toast" id="unlock-toast" role="status" aria-live="polite"></div>
 
@@ -1486,6 +1515,9 @@
             const guideToggle = document.getElementById("guide-toggle");
             const guideClose = document.getElementById("guide-close");
             const guideStart = document.getElementById("guide-start");
+            const bgMusic = document.getElementById("bg-music");
+            const musicToggle = document.getElementById("music-toggle");
+            const musicStateEl = document.querySelector("[data-music-state]");
             const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
             // ===== 场景参数 =====
@@ -1494,6 +1526,7 @@
             const MAX_BOOST = 1.65;
             const BOOST_DECAY = 2.75;
             const HOLD_RAMP_SECONDS = 4.5;
+            const MUSIC_VOLUME = 0.38;
             const MAX_RESONANCE = 5;
             const DUST_PER_STAR = 5;
             const CONSTELLATION_STAR_COUNT = 6;
@@ -1568,7 +1601,8 @@
                 rhythmMode: false,
                 tutorialSeen: false,
                 guideSeen: false,
-                guideOpen: false
+                guideOpen: false,
+                musicEnabled: true
             };
 
             // 根据视口计算视觉尺寸，避免小屏上的光带过粗
@@ -1605,6 +1639,7 @@
             let lastPhraseIndex = -1;
             let wordSerial = 0;
             let toastTimer = 0;
+            let musicFadeTimer = 0;
 
             const PHRASES = [
                 "你正在向前",
@@ -2103,6 +2138,73 @@
                 }, duration);
             }
 
+            function updateMusicUi() {
+                musicToggle.classList.toggle("is-on", state.musicEnabled);
+                musicToggle.setAttribute(
+                    "aria-pressed",
+                    String(state.musicEnabled)
+                );
+                musicStateEl.textContent = state.musicEnabled ? "ON" : "OFF";
+            }
+
+            function fadeMusicTo(targetVolume, duration = 900) {
+                window.clearInterval(musicFadeTimer);
+                const startVolume = bgMusic.volume;
+                const steps = Math.max(1, Math.round(duration / 50));
+                let step = 0;
+
+                musicFadeTimer = window.setInterval(() => {
+                    step += 1;
+                    const progress = Math.min(1, step / steps);
+                    bgMusic.volume = clamp(
+                        startVolume + (targetVolume - startVolume) * progress,
+                        0,
+                        1
+                    );
+
+                    if (step >= steps) {
+                        window.clearInterval(musicFadeTimer);
+                    }
+                }, 50);
+            }
+
+            function ensureMusicStarted() {
+                if (!state.musicEnabled || !bgMusic || !bgMusic.paused) {
+                    return;
+                }
+
+                bgMusic.volume = 0;
+                const playPromise = bgMusic.play();
+
+                if (playPromise && typeof playPromise.then === "function") {
+                    playPromise
+                        .then(() => fadeMusicTo(MUSIC_VOLUME))
+                        .catch(() => {
+                            // 自动播放被拦截时保持静音，下一次用户手势再尝试
+                        });
+                } else {
+                    fadeMusicTo(MUSIC_VOLUME);
+                }
+            }
+
+            function pauseMusic() {
+                window.clearInterval(musicFadeTimer);
+                bgMusic.pause();
+            }
+
+            function toggleMusic() {
+                state.musicEnabled = !state.musicEnabled;
+
+                if (state.musicEnabled) {
+                    ensureMusicStarted();
+                } else {
+                    pauseMusic();
+                }
+
+                updateMusicUi();
+                saveProgress();
+            }
+
             function loadProgress() {
                 let data = null;
 
@@ -2143,6 +2245,7 @@
                 state.rhythmMode = data.rhythmMode === true;
                 state.tutorialSeen = data.tutorialSeen === true;
                 state.guideSeen = data.guideSeen === true;
+                state.musicEnabled = data.musicEnabled !== false;
                 state.bestResonance = Number.isFinite(data.bestResonance)
                     ? clamp(Math.floor(data.bestResonance), 0, MAX_RESONANCE)
                     : 0;
@@ -2157,6 +2260,7 @@
                         rhythmMode: state.rhythmMode,
                         tutorialSeen: state.tutorialSeen,
                         guideSeen: state.guideSeen,
+                        musicEnabled: state.musicEnabled,
                         bestResonance: state.bestResonance
                     }));
                 } catch {
@@ -2563,6 +2667,7 @@
                 guideOverlay.classList.remove("is-open");
                 guideOverlay.setAttribute("aria-hidden", "true");
                 document.body.classList.remove("guide-open");
+                ensureMusicStarted();
 
                 if (!state.guideSeen) {
                     state.guideSeen = true;
@@ -3890,6 +3995,35 @@
                 event.stopPropagation();
             });
 
+            musicToggle.addEventListener("click", toggleMusic);
+
+            bgMusic.addEventListener("error", () => {
+                showToast("音乐加载失败", 2200);
+            });
+
+            document.addEventListener("pointerdown", (event) => {
+                if (state.guideOpen) {
+                    return;
+                }
+
+                if (
+                    event.target instanceof Element
+                    && event.target.closest("#music-toggle")
+                ) {
+                    return;
+                }
+
+                ensureMusicStarted();
+            }, { capture: true, passive: true });
+
+            document.addEventListener("keydown", (event) => {
+                if (state.guideOpen || event.code !== "Space") {
+                    return;
+                }
+
+                ensureMusicStarted();
+            }, { capture: true });
+
             rhythmToggle.addEventListener("click", () => {
                 setRhythmMode(!state.rhythmMode);
             });
@@ -4065,6 +4199,7 @@
                 if (document.hidden) {
                     stopHold();
                     saveProgress();
+                    pauseMusic();
                 }
 
                 state.paused = document.hidden;
@@ -4072,6 +4207,7 @@
 
                 if (!state.paused) {
                     cursorEl.classList.remove("is-visible");
+                    ensureMusicStarted();
                 }
             });
 
@@ -4089,7 +4225,9 @@
             loadProgress();
             setPalette(state.activePalette, false);
             updateRhythmUi();
+            updateMusicUi();
             updateProgressHud();
+            bgMusic.volume = 0;
             resize();
             state.lastTime = performance.now();
             requestAnimationFrame(frame);
