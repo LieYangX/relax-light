@@ -439,6 +439,76 @@
             pointer-events: auto;
         }
 
+        .rhythm-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 6px 8px 6px 7px;
+            border-left: 1px solid rgba(125, 235, 255, 0.3);
+            background: linear-gradient(90deg, rgba(10, 30, 40, 0.48), transparent 88%);
+            color: var(--quiet);
+            font-size: 9px;
+            line-height: 1.45;
+            letter-spacing: 0.04em;
+        }
+
+        .rhythm-panel[hidden] {
+            display: none;
+        }
+
+        .rhythm-panel-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            color: var(--core);
+            font-size: 9px;
+            letter-spacing: 0.08em;
+        }
+
+        .rhythm-panel-label {
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .rhythm-beats {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rhythm-beats i {
+            width: 4px;
+            height: 4px;
+            border: 1px solid rgba(125, 235, 255, 0.4);
+            border-radius: 50%;
+            opacity: 0.35;
+            transition: background 120ms ease, box-shadow 120ms ease, opacity 120ms ease, transform 120ms ease;
+        }
+
+        .rhythm-beats i.is-on {
+            background: var(--ion);
+            border-color: var(--ion);
+            box-shadow: 0 0 7px var(--ion);
+            opacity: 1;
+            transform: scale(1.35);
+        }
+
+        .rhythm-sync {
+            margin-left: auto;
+            color: var(--ion);
+            font-weight: 400;
+            white-space: nowrap;
+        }
+
+        .rhythm-panel-reward {
+            color: var(--quiet);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 9px;
+            line-height: 1.5;
+            letter-spacing: 0.02em;
+        }
+
         .rhythm-toggle,
         .guide-toggle,
         .music-toggle {
@@ -1266,6 +1336,30 @@
                 gap: 7px;
             }
 
+            .rhythm-panel {
+                gap: 3px;
+                padding: 5px 6px;
+                font-size: 8px;
+            }
+
+            .rhythm-panel-head {
+                gap: 6px;
+                font-size: 8px;
+            }
+
+            .rhythm-beats {
+                gap: 3px;
+            }
+
+            .rhythm-beats i {
+                width: 3px;
+                height: 3px;
+            }
+
+            .rhythm-panel-reward {
+                font-size: 8px;
+            }
+
             .rhythm-toggle,
             .guide-toggle,
             .music-toggle {
@@ -1434,7 +1528,8 @@
             .unlock-toast,
             .guide-overlay,
             .guide-start,
-            .guide-close {
+            .guide-close,
+            .rhythm-beats i {
                 transition: none;
             }
         }
@@ -1485,13 +1580,24 @@
                     <span class="hint-zh">点击脉冲 · 长按蓄力，光环重合时松开</span>
                 </div>
                 <div class="touch-hint touch-only">轻触脉冲 · 长按蓄力，光环重合时松开</div>
+                <div class="rhythm-panel" id="rhythm-panel" hidden>
+                    <div class="rhythm-panel-head">
+                        <span class="rhythm-panel-label">RHYTHM // 75 BPM</span>
+                        <span class="rhythm-beats" id="rhythm-beats" aria-hidden="true">
+                            <i></i><i></i><i></i><i></i>
+                        </span>
+                        <b class="rhythm-sync">SYNC ×<span data-rhythm-sync>0</span></b>
+                    </div>
+                    <span class="rhythm-panel-reward">踩拍点击 +1 共鸣 / +1 尘 · 松开 +2 尘</span>
+                    <span class="rhythm-panel-reward">每 8 次 SYNC 额外 +4 尘 · 光环对齐拍点</span>
+                </div>
                 <div class="hint-tools" id="hint-tools">
                     <button class="guide-toggle" id="guide-toggle" type="button">玩法</button>
                     <button class="music-toggle" id="music-toggle" type="button" aria-pressed="true">
                         <span>音乐</span>
                         <b data-music-state>ON</b>
                     </button>
-                    <button class="rhythm-toggle" id="rhythm-toggle" type="button" aria-pressed="false">
+                    <button class="rhythm-toggle" id="rhythm-toggle" type="button" aria-pressed="false" title="75 BPM 节拍挑战：踩拍额外获得星尘和共鸣">
                         <span class="tool-dot" aria-hidden="true"></span>
                         <span>RHYTHM</span>
                         <b data-rhythm-state>OFF</b>
@@ -1557,7 +1663,7 @@
                         <span class="guide-number">05</span>
                         <div>
                             <h3>可选玩法</h3>
-                            <p><strong>RHYTHM</strong> 开启节奏模式，点击和松开都尽量踩在拍点上。底部色点或 <strong>C</strong> 键切换已解锁配色。</p>
+                            <p><strong>RHYTHM</strong> 是可选的 75 BPM 节拍挑战。踩拍按下：<strong>+1 共鸣 / +1 星尘</strong>；踩拍松开：<strong>+2 星尘</strong> 并放出光波；每 8 次 SYNC 额外 <strong>+4 星尘</strong>。开启后光环会尽量与拍点对齐，方便把 PERFECT 和 SYNC 叠加；节拍以画面脉冲为准，不开启也能正常收集。左下角面板会显示累计 SYNC 次数和当前拍点，底部色点或 <strong>C</strong> 键切换已解锁配色。</p>
                         </div>
                     </li>
                 </ol>
@@ -1569,6 +1675,7 @@
                         <div><span>PERFECT</span><b>+6 + 共鸣等级</b></div>
                         <div><span>踩拍按下</span><b>+1</b></div>
                         <div><span>踩拍松开</span><b>+2</b></div>
+                        <div><span>SYNC 里程碑</span><b>每 8 次 +4 尘</b></div>
                         <div><span>1 颗星</span><b>5 尘</b></div>
                         <div><span>1 星座</span><b>30 尘</b></div>
                     </div>
@@ -1663,6 +1770,11 @@
             const resonanceEl = document.querySelector("[data-resonance]");
             const rhythmToggle = document.getElementById("rhythm-toggle");
             const rhythmStateEl = document.querySelector("[data-rhythm-state]");
+            const rhythmPanel = document.getElementById("rhythm-panel");
+            const rhythmSyncEl = document.querySelector("[data-rhythm-sync]");
+            const rhythmBeatEls = Array.from(
+                document.querySelectorAll("#rhythm-beats i")
+            );
             const paletteSwitcher = document.getElementById("palette-switcher");
             const hintTools = document.getElementById("hint-tools");
             const unlockToast = document.getElementById("unlock-toast");
@@ -1760,7 +1872,9 @@
                 tutorialSeen: false,
                 guideSeen: false,
                 guideOpen: false,
-                musicEnabled: true
+                musicEnabled: true,
+                rhythmSync: 0,
+                rhythmBeatIndex: -1
             };
 
             // 根据视口计算视觉尺寸，避免小屏上的光带过粗
@@ -2405,6 +2519,9 @@
                     ? data.activePalette
                     : "cyan";
                 state.rhythmMode = data.rhythmMode === true;
+                state.rhythmSync = Number.isFinite(data.rhythmSync)
+                    ? Math.max(0, Math.floor(data.rhythmSync))
+                    : 0;
                 state.tutorialSeen = data.tutorialSeen === true;
                 state.guideSeen = data.guideSeen === true;
                 state.musicEnabled = data.musicEnabled !== false;
@@ -2420,6 +2537,7 @@
                         unlockedPalettes: state.unlockedPalettes,
                         activePalette: state.activePalette,
                         rhythmMode: state.rhythmMode,
+                        rhythmSync: state.rhythmSync,
                         tutorialSeen: state.tutorialSeen,
                         guideSeen: state.guideSeen,
                         musicEnabled: state.musicEnabled,
@@ -2764,14 +2882,53 @@
                 return true;
             }
 
+            // 计数由本次踩拍的星尘结算一并保存，避免重复写入存档
+            function registerRhythmSync() {
+                state.rhythmSync += 1;
+                rhythmSyncEl.textContent = String(state.rhythmSync);
+                const milestone = state.rhythmSync % 8 === 0;
+
+                if (milestone) {
+                    addDust(4);
+                    spawnRing(0.62, 0, false, 0, false, true);
+                }
+
+                return milestone;
+            }
+
+            function updateRhythmBeat() {
+                if (!state.rhythmMode || rhythmBeatEls.length === 0) {
+                    return;
+                }
+
+                const index = Math.floor(state.time / RHYTHM_INTERVAL)
+                    % rhythmBeatEls.length;
+
+                if (index === state.rhythmBeatIndex) {
+                    return;
+                }
+
+                state.rhythmBeatIndex = index;
+                rhythmBeatEls.forEach((el, beatIndex) => {
+                    el.classList.toggle("is-on", beatIndex === index);
+                });
+            }
+
             function evaluateRhythmRelease() {
                 if (!state.rhythmMode || beatProximity() > RHYTHM_WINDOW) {
                     return false;
                 }
 
+                const milestone = registerRhythmSync();
                 addDust(2);
                 spawnRing(0.52, 0, false, 0, false, true);
                 state.zoom = Math.min(0.09, state.zoom + 0.012);
+                pushStatusPop(
+                    milestone ? `ECHO ×${state.rhythmSync} +4` : "ECHO +2",
+                    milestone ? 15 : 11,
+                    milestone ? "255, 226, 157" : "178, 255, 255",
+                    milestone ? 1.05 : 0.8
+                );
                 return true;
             }
 
@@ -2780,9 +2937,15 @@
                     return;
                 }
 
+                const milestone = registerRhythmSync();
                 addResonance(1);
                 addDust(1);
-                pushStatusPop("SYNC", 13, "178, 255, 255", 0.8);
+                pushStatusPop(
+                    milestone ? `SYNC ×${state.rhythmSync} +4` : "SYNC +1",
+                    milestone ? 15 : 13,
+                    milestone ? "255, 226, 157" : "178, 255, 255",
+                    milestone ? 1.05 : 0.8
+                );
             }
 
             function updateRhythmUi() {
@@ -2792,6 +2955,15 @@
                     String(state.rhythmMode)
                 );
                 rhythmStateEl.textContent = state.rhythmMode ? "ON" : "OFF";
+                rhythmPanel.hidden = !state.rhythmMode;
+                rhythmSyncEl.textContent = String(state.rhythmSync);
+
+                if (!state.rhythmMode) {
+                    state.rhythmBeatIndex = -1;
+                    rhythmBeatEls.forEach((el) => {
+                        el.classList.remove("is-on");
+                    });
+                }
             }
 
             function setRhythmMode(enabled, announce = true) {
@@ -2801,8 +2973,10 @@
 
                 if (announce) {
                     showToast(
-                        enabled ? "RHYTHM // ON" : "RHYTHM // OFF",
-                        1600
+                        enabled
+                            ? "RHYTHM ON // 75 BPM 节拍挑战"
+                            : "RHYTHM OFF",
+                        enabled ? 2000 : 1600
                     );
                 }
             }
@@ -3763,6 +3937,7 @@
                     return;
                 }
 
+                updateRhythmBeat();
                 const phase = (state.time % RHYTHM_INTERVAL) / RHYTHM_INTERVAL;
                 const alpha = Math.pow(1 - phase, 2) * 0.2;
                 const radius = 26 + phase * 132;
